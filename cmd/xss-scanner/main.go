@@ -36,7 +36,7 @@ func main() {
 		crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
 		scanFile     = flag.String("scan-file", "", "File containing URLs to scan for XSS")
 		outputFile   = flag.String("o", "", "Output file to save scan results")
-		concurrency  = flag.Int("concurrency", 5, "Number of concurrent scans (1-10, default: 5)")
+		concurrency  = flag.Int("concurrency", 5, "Number of concurrent scans (1-20, default: 5)")
 		headersFile = flag.String("headers-file", "", "File containing HTTP headers in JSON format")
 		quiet       = flag.Bool("quiet", false, "Suppress verbose output")
 		headless    = flag.Bool("headless", true, "Use headless browser for testing")
@@ -49,8 +49,8 @@ func main() {
 	flag.Parse()
 
 	// Validate concurrency flag
-	if *concurrency < 1 || *concurrency > 10 {
-		log.Fatal("Concurrency must be between 1 and 10")
+	if *concurrency < 1 || *concurrency > 20 {
+		log.Fatal("Concurrency must be between 1 and 20")
 	}
 
 	// Silence all log output when quiet is enabled
@@ -175,7 +175,7 @@ var (
     wafCache   = make(map[string]struct{Detected bool; Name string})
 	
 	// Concurrent scanning configuration
-	maxConcurrentScans = 10 // Maximum number of concurrent scans
+	maxConcurrentScans = 20 // Maximum number of concurrent scans
 	activeScans        = 0  // Current number of active scans
 	scanSemaphore      = make(chan struct{}, maxConcurrentScans) // Semaphore for limiting concurrent scans
 	
