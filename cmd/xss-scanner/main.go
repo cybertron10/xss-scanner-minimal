@@ -340,21 +340,15 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 	vuln["url"] = url
 	vuln["timestamp"] = time.Now().Format("2006-01-02 15:04:05")
 	
-	// Check for duplicates before adding
-	vulnURL := vuln["url"].(string)
-	vulnContext := vuln["context"].(string)
+	// Check for duplicates before adding (based on exploit URL only)
+	exploitURL := vuln["exploit_url"].(string)
 	
-	// Create unique key for deduplication
-	vulnKey := vulnURL + "|" + vulnContext
-	
-	// Check if this vulnerability already exists
+	// Check if this exploit URL already exists
 	duplicate := false
 	for _, existingVuln := range vulnerabilities {
-		existingURL := existingVuln["url"].(string)
-		existingContext := existingVuln["context"].(string)
-		existingKey := existingURL + "|" + existingContext
+		existingExploitURL := existingVuln["exploit_url"].(string)
 		
-		if existingKey == vulnKey {
+		if existingExploitURL == exploitURL {
 			duplicate = true
 			break
 		}
@@ -362,10 +356,14 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 	
 	// Only add if not duplicate
 	if !duplicate {
-		vulnerabilities = append(vulnerabilities, vuln)
-		log.Printf("Added new vulnerability: %s (%s)", vulnURL, vulnContext)
+		// Create simplified vulnerability with only exploit URL
+		simplifiedVuln := map[string]interface{}{
+			"exploit_url": vuln["exploit_url"],
+		}
+		vulnerabilities = append(vulnerabilities, simplifiedVuln)
+		log.Printf("Added new vulnerability: %s", vuln["exploit_url"])
 	} else {
-		log.Printf("Skipped duplicate vulnerability: %s (%s)", vulnURL, vulnContext)
+		log.Printf("Skipped duplicate vulnerability: %s", vuln["exploit_url"])
 	}
 	
 	// Write to temporary file first
