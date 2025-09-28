@@ -81,11 +81,15 @@ func main() {
 		return
 	}
 
-	if *scanFile != "" {
-		if *quiet { log.SetOutput(io.Discard) }
-		runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
-		return
-	}
+    if *scanFile != "" {
+        if *quiet { log.SetOutput(io.Discard) }
+        if *crawlOnly || *crawl {
+            runFileCrawlOnly(*scanFile, *outputFile)
+        } else {
+            runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
+        }
+        return
+    }
 
 	if *scanURL == "" {
 		log.Fatal("URL is required. Use -url flag or -d for domain scanning")
@@ -1015,6 +1019,60 @@ func runDomainCrawlOnly(domain string, outputFile string) {
     _ = f.Close()
 
     log.Printf("Crawling completed. Wrote %d URLs to %s", len(unique), outPath)
+}
+
+// runFileCrawlOnly crawls targets listed in a file and writes unique URLs to output (defaults to urls.txt)
+func runFileCrawlOnly(filename string, outputFile string) {
+    log.Printf("Starting crawl-only from file: %s", filename)
+
+    // Read targets (URLs or domains) from file
+    targets, err := readURLsFromFile(filename)
+    if err != nil {
+        log.Fatalf("Error reading targets from file: %v", err)
+    }
+    if len(targets) == 0 {
+        log.Printf("No targets found in %s", filename)
+        // Still create/overwrite an empty urls.txt to be explicit
+        outPath := "urls.txt"
+        if outputFile != "" { outPath = outputFile }
+        _ = os.WriteFile(outPath, []byte(""), 0644)
+        log.Printf("Crawling completed. Wrote 0 URLs to %s", outPath)
+        return
+    }
+
+    // Generate scan ID for file crawl
+    scanID := "file_crawl_only_" + strconv.FormatInt(time.Now().Unix(), 10)
+
+    // Aggregate discovered URLs across all targets
+    all := make(map[string]struct{})
+    for i, targetURL := range targets {
+        log.Printf("Crawling %d/%d: %s", i+1, len(targets), targetURL)
+
+        base := targetURL
+        if !strings.HasSuffix(base, "/") { base += "/" }
+
+        urls := crawlDomain(base, scanID)
+        for _, u := range urls {
+            all[u] = struct{}{}
+        }
+    }
+
+    // Dedupe and write to output
+    outPath := "urls.txt"
+    if outputFile != "" { outPath = outputFile }
+
+    f, err := os.Create(outPath)
+    if err != nil {
+        log.Fatalf("Failed to create %s: %v", outPath, err)
+    }
+    defer f.Close()
+
+    count := 0
+    for u := range all {
+        _, _ = f.WriteString(u + "\n")
+        count++
+    }
+    log.Printf("Crawling completed. Wrote %d URLs to %s", count, outPath)
 }
 
 // runScanFromFile scans URLs or domains from a file
