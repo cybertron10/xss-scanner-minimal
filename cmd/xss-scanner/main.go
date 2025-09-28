@@ -1186,13 +1186,13 @@ func startFileDomainCrawling(urls []string, scanID string) {
 	crawlMutex.Unlock()
 	
 	// Crawl each domain/URL
-	for i, url := range urls {
-		log.Printf("Crawling %d/%d: %s", i+1, len(urls), url)
+	for i, targetURL := range urls {
+		log.Printf("Crawling %d/%d: %s", i+1, len(urls), targetURL)
 		
 		// Parse URL to get domain
-		parsedURL, err := url.Parse(url)
+		parsedURL, err := url.Parse(targetURL)
 		if err != nil {
-			log.Printf("Error parsing URL %s: %v", url, err)
+			log.Printf("Error parsing URL %s: %v", targetURL, err)
 			continue
 		}
 		
@@ -1203,7 +1203,7 @@ func startFileDomainCrawling(urls []string, scanID string) {
 		}
 		
 		// Determine base URL for crawling
-		baseURL := url
+		baseURL := targetURL
 		if !strings.HasSuffix(baseURL, "/") {
 			baseURL += "/"
 		}
