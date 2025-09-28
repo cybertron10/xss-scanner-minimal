@@ -33,7 +33,9 @@ func main() {
 	var (
 		scanURL      = flag.String("url", "", "URL to scan for XSS vulnerabilities")
 		scanDomain   = flag.String("d", "", "Domain to scan for XSS vulnerabilities")
-        crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
+		crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
+		// New: explicit scan-only mode for lists of URLs (used with -scan-file)
+		scanOnly     = flag.Bool("scan", false, "Only scan URLs; skip crawling (use with -scan-file)")
         // New alias flag per user request: crawl only and write to urls.txt
         crawl        = flag.Bool("crawl", false, "Crawl only; write URLs to urls.txt and exit (no XSS scan)")
 		scanFile     = flag.String("scan-file", "", "File containing URLs to scan for XSS")
@@ -83,10 +85,13 @@ func main() {
 
     if *scanFile != "" {
         if *quiet { log.SetOutput(io.Discard) }
+        // Explicit behavior: with -crawl treat items as domains and crawl; with -scan treat items as URLs and scan
         if *crawlOnly || *crawl {
             runFileCrawlOnly(*scanFile, *outputFile)
-        } else {
+        } else if *scanOnly {
             runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
+        } else {
+            log.Fatal("With -scan-file, specify either -crawl (domains -> crawl to URLs) or -scan (URLs -> scan directly)")
         }
         return
     }
@@ -1077,92 +1082,60 @@ func runFileCrawlOnly(filename string, outputFile string) {
 
 // runScanFromFile scans URLs or domains from a file
 func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string) {
-	log.Printf("Starting scan from file: %s (concurrency: %d)", filename, concurrency)
-	
-	// Clean up old scan results files before starting new scan
-	cleanupAllResultsFiles()
-	log.Printf("Cleaned up old scan results files")
-	
-	// Read URLs/domains from file
-	urls, err := readURLsFromFile(filename)
-	if err != nil {
-		log.Fatalf("Error reading URLs from file: %v", err)
-	}
-	
-	log.Printf("Found %d URLs/domains to scan", len(urls))
-	
-	// Generate scan ID
-	scanID := "file_scan_" + strconv.FormatInt(time.Now().Unix(), 10)
-	
-	// Set global concurrency
-	maxConcurrentScans = concurrency
-	scanSemaphore = make(chan struct{}, concurrency)
-	
-	// Start worker processes
-	go processScanQueue(quiet)
-	
-	// Start domain crawling for each URL/domain
-	startFileDomainCrawling(urls, scanID)
-	
-	// Wait for scanning to complete
-	log.Printf("Waiting for scanning to complete...")
-	for {
-		time.Sleep(2 * time.Second)
-		
-		// Check if all discovered URLs have been scanned
-		crawlMutex.RLock()
-		status, exists := crawlStatuses[scanID]
-		crawlMutex.RUnlock()
-		
-		if !exists {
-			log.Printf("Scan status not found, waiting...")
-			continue
-		}
-		
-		if status.Status == "completed" {
-			log.Printf("File scan completed for: %s", filename)
-			
-			// Save results to output file if specified
-			if outputFile != "" {
-				saveFileScanResults(scanID, outputFile)
-			}
-			break
-		}
-		
-		// Check if all discovered URLs have been scanned
-		scanMutex.Lock()
-		allDiscoveredScanned := true
-		for _, discoveredURL := range status.DiscoveredURLs {
-			if urlStatus, exists := scanStatus[discoveredURL]; !exists || urlStatus != "completed" {
-				allDiscoveredScanned = false
-				break
-			}
-		}
-		scanMutex.Unlock()
-		
-		if allDiscoveredScanned && len(status.DiscoveredURLs) > 0 {
-			// Mark as completed
-			crawlMutex.Lock()
-			if status, exists := crawlStatuses[scanID]; exists {
-				status.Status = "completed"
-				status.ScannedURLs = status.DiscoveredURLs
-				now := time.Now()
-				status.EndTime = &now
-			}
-			crawlMutex.Unlock()
-			
-			log.Printf("File scan completed for: %s", filename)
-			
-			// Save results to output file if specified
-			if outputFile != "" {
-				saveFileScanResults(scanID, outputFile)
-			}
-			break
-		}
-		
-		log.Printf("Scanning in progress... (discovered: %d, scanned: %d)", 
-			len(status.DiscoveredURLs), len(status.ScannedURLs))
-	}
+    log.Printf("Starting direct URL scan from file: %s (concurrency: %d)", filename, concurrency)
+
+    // Clean up old scan results files before starting new scan
+    cleanupAllResultsFiles()
+    log.Printf("Cleaned up old scan results files")
+
+    // Read URLs from file (expects full URLs; domains will be prefixed as https://)
+    urls, err := readURLsFromFile(filename)
+    if err != nil {
+        log.Fatalf("Error reading URLs from file: %v", err)
+    }
+    if len(urls) == 0 {
+        log.Printf("No URLs found in %s", filename)
+        return
+    }
+
+    log.Printf("Found %d URLs to scan", len(urls))
+
+    // Generate scan ID
+    scanID := "file_scan_" + strconv.FormatInt(time.Now().Unix(), 10)
+
+    // Set global concurrency and start workers
+    maxConcurrentScans = concurrency
+    scanSemaphore = make(chan struct{}, concurrency)
+    go processScanQueue(quiet)
+
+    // Enqueue URLs directly for scanning (skip crawling)
+    startConcurrentScanningWithConcurrency(urls, scanID, concurrency)
+
+    // Wait for all URLs to be scanned
+    log.Printf("Waiting for URL scanning to complete...")
+    for {
+        time.Sleep(2 * time.Second)
+
+        scanMutex.Lock()
+        completed := 0
+        for _, u := range urls {
+            if urlStatus, exists := scanStatus[u]; exists && urlStatus == "completed" {
+                completed++
+            }
+        }
+        allDone := completed == len(urls)
+        scanMutex.Unlock()
+
+        if allDone {
+            log.Printf("File URL scan completed for: %s", filename)
+            if outputFile != "" {
+                saveFileScanResults(scanID, outputFile)
+            }
+            break
+        }
+
+        log.Printf("Scanning in progress... (%d/%d completed)", completed, len(urls))
+    }
 }
 
 // readURLsFromFile reads URLs or domains from a file
