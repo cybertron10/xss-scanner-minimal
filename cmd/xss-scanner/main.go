@@ -314,8 +314,8 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 		resultsFile = fmt.Sprintf("scan_results_%s.json", scanID)
 		resultsFiles[scanID] = resultsFile
 		
-		// Initialize file with empty array
-		os.WriteFile(resultsFile, []byte("[]"), 0644)
+		// Initialize file with empty content
+		os.WriteFile(resultsFile, []byte(""), 0644)
 	}
 	
 	// Use atomic file operations to prevent race conditions
@@ -328,11 +328,15 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 		return
 	}
 	
-	var vulnerabilities []map[string]interface{}
+	var vulnerabilities []interface{}
 	if len(data) > 0 {
-		if err := json.Unmarshal(data, &vulnerabilities); err != nil {
-			log.Printf("Error parsing existing results: %v", err)
-			return
+		// Parse existing URLs (one per line)
+		lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+		for _, line := range lines {
+			line = strings.TrimSpace(line)
+			if line != "" {
+				vulnerabilities = append(vulnerabilities, line)
+			}
 		}
 	}
 	
@@ -346,7 +350,7 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 	// Check if this exploit URL already exists
 	duplicate := false
 	for _, existingVuln := range vulnerabilities {
-		existingExploitURL := existingVuln["exploit_url"].(string)
+		existingExploitURL := existingVuln.(string)
 		
 		if existingExploitURL == exploitURL {
 			duplicate = true
@@ -356,22 +360,19 @@ func writeVulnerabilityToFile(scanID, url string, vuln map[string]interface{}) {
 	
 	// Only add if not duplicate
 	if !duplicate {
-		// Create simplified vulnerability with only exploit URL
-		simplifiedVuln := map[string]interface{}{
-			"exploit_url": vuln["exploit_url"],
-		}
-		vulnerabilities = append(vulnerabilities, simplifiedVuln)
+		// Add just the exploit URL as a string
+		vulnerabilities = append(vulnerabilities, vuln["exploit_url"])
 		log.Printf("Added new vulnerability: %s", vuln["exploit_url"])
 	} else {
 		log.Printf("Skipped duplicate vulnerability: %s", vuln["exploit_url"])
 	}
 	
-	// Write to temporary file first
-	newData, err := json.MarshalIndent(vulnerabilities, "", "  ")
-	if err != nil {
-		log.Printf("Error marshaling vulnerabilities: %v", err)
-		return
+	// Write to temporary file first (one URL per line)
+	var lines []string
+	for _, vuln := range vulnerabilities {
+		lines = append(lines, vuln.(string))
 	}
+	newData := []byte(strings.Join(lines, "\n") + "\n")
 	
 	if err := os.WriteFile(tempFile, newData, 0644); err != nil {
 		log.Printf("Error writing temporary file: %v", err)
