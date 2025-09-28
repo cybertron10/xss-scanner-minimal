@@ -35,6 +35,7 @@ func main() {
 		scanDomain   = flag.String("d", "", "Domain to scan for XSS vulnerabilities")
 		crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
 		scanFile     = flag.String("scan-file", "", "File containing URLs to scan for XSS")
+		outputFile   = flag.String("o", "", "Output file to save scan results")
 		concurrency  = flag.Int("concurrency", 5, "Number of concurrent scans (1-10, default: 5)")
 		headersFile = flag.String("headers-file", "", "File containing HTTP headers in JSON format")
 		quiet       = flag.Bool("quiet", false, "Suppress verbose output")
@@ -70,17 +71,17 @@ func main() {
 		
 		if *crawlOnly {
 			// Only crawl domain and save URLs to file
-			runDomainCrawlOnly(*scanDomain)
+			runDomainCrawlOnly(*scanDomain, *outputFile)
 		} else {
 			// Full domain scan (crawl + scan)
-			runDomainScan(*scanDomain, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout)
+			runDomainScan(*scanDomain, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
 		}
 		return
 	}
 
 	if *scanFile != "" {
 		if *quiet { log.SetOutput(io.Discard) }
-		runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout)
+		runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
 		return
 	}
 
@@ -150,7 +151,19 @@ func main() {
 		log.Fatalf("Failed to marshal result: %v", err)
 	}
 
-	fmt.Println(string(output))
+	// Save to file if output file is specified
+	if *outputFile != "" {
+		err = os.WriteFile(*outputFile, output, 0644)
+		if err != nil {
+			log.Fatalf("Failed to write output file: %v", err)
+		}
+		if !*quiet {
+			log.Printf("Results saved to: %s", *outputFile)
+		}
+	} else {
+		// Print to stdout if no output file specified
+		fmt.Println(string(output))
+	}
 }
 
 // Global variables to store scan results and status
@@ -946,7 +959,7 @@ func getScanResults(scanID string) map[string]interface{} {
 
 // runDomainScan runs domain scanning from command line
 // runDomainCrawlOnly only crawls a domain and saves URLs to file
-func runDomainCrawlOnly(domain string) {
+func runDomainCrawlOnly(domain string, outputFile string) {
 	log.Printf("Starting domain crawl only for: %s", domain)
 	
 	// Generate scan ID
@@ -975,12 +988,31 @@ func runDomainCrawlOnly(domain string) {
 	// Crawl the domain
 	discoveredURLs := crawlDomain(baseURL, scanID)
 	
-	log.Printf("Crawling completed. Found %d URLs. Saved to: crawled_urls_%s.txt", len(discoveredURLs), scanID)
-	log.Printf("To scan these URLs, use: bin\\xss-scanner.exe -scan-file crawled_urls_%s.txt -concurrency 3", scanID)
+	// Save to custom output file if specified
+	if outputFile != "" {
+		// Save discovered URLs to custom output file
+		file, err := os.Create(outputFile)
+		if err != nil {
+			log.Fatalf("Failed to create output file: %v", err)
+		}
+		defer file.Close()
+		
+		fmt.Fprintf(file, "Crawled URLs for %s\n", domain)
+		fmt.Fprintf(file, "Total URLs found: %d\n\n", len(discoveredURLs))
+		
+		for i, url := range discoveredURLs {
+			fmt.Fprintf(file, "%d. %s\n", i+1, url)
+		}
+		
+		log.Printf("Crawling completed. Found %d URLs. Saved to: %s", len(discoveredURLs), outputFile)
+	} else {
+		log.Printf("Crawling completed. Found %d URLs. Saved to: crawled_urls_%s.txt", len(discoveredURLs), scanID)
+		log.Printf("To scan these URLs, use: bin\\xss-scanner.exe -scan-file crawled_urls_%s.txt -concurrency 3", scanID)
+	}
 }
 
 // runScanFromFile scans URLs from a file
-func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration) {
+func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string) {
 	log.Printf("Starting scan from file: %s (concurrency: %d)", filename, concurrency)
 	
 	// Clean up old scan results files before starting new scan
@@ -1026,6 +1058,11 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 		
 		if allCompleted {
 			log.Printf("File scan completed for: %s", filename)
+			
+			// Save results to output file if specified
+			if outputFile != "" {
+				saveFileScanResults(scanID, outputFile)
+			}
 			break
 		}
 		
@@ -1065,7 +1102,7 @@ func readURLsFromFile(filename string) ([]string, error) {
 	return urls, nil
 }
 
-func runDomainScan(domain string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration) {
+func runDomainScan(domain string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string) {
 	log.Printf("Starting domain scan for: %s (concurrency: %d)", domain, concurrency)
 	
 	// Clean up old scan results files before starting new scan
@@ -1100,12 +1137,61 @@ func runDomainScan(domain string, concurrency int, quiet, headless, fastMode, ul
 		
 		if status.Status == "completed" {
 			log.Printf("Domain scan completed for: %s", domain)
+			
+			// Save results to output file if specified
+			if outputFile != "" {
+				saveDomainScanResults(scanID, outputFile)
+			}
 			break
 		}
 		
 		log.Printf("Scan status: %s, discovered: %d, scanned: %d", 
 			status.Status, len(status.DiscoveredURLs), len(status.ScannedURLs))
 		time.Sleep(2 * time.Second)
+	}
+}
+
+// saveFileScanResults saves file scan results to output file
+func saveFileScanResults(scanID, outputFile string) {
+	resultsMutex.RLock()
+	defer resultsMutex.RUnlock()
+	
+	if resultsFile, exists := resultsFiles[scanID]; exists {
+		data, err := os.ReadFile(resultsFile)
+		if err != nil {
+			log.Printf("Error reading results file: %v", err)
+			return
+		}
+		
+		err = os.WriteFile(outputFile, data, 0644)
+		if err != nil {
+			log.Printf("Error writing output file: %v", err)
+			return
+		}
+		
+		log.Printf("Results saved to: %s", outputFile)
+	}
+}
+
+// saveDomainScanResults saves domain scan results to output file
+func saveDomainScanResults(scanID, outputFile string) {
+	resultsMutex.RLock()
+	defer resultsMutex.RUnlock()
+	
+	if resultsFile, exists := resultsFiles[scanID]; exists {
+		data, err := os.ReadFile(resultsFile)
+		if err != nil {
+			log.Printf("Error reading results file: %v", err)
+			return
+		}
+		
+		err = os.WriteFile(outputFile, data, 0644)
+		if err != nil {
+			log.Printf("Error writing output file: %v", err)
+			return
+		}
+		
+		log.Printf("Results saved to: %s", outputFile)
 	}
 }
 

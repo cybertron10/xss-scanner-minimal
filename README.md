@@ -52,16 +52,18 @@ Options:
         Single URL to scan
   -d string
         Domain to crawl and scan
-  -file string
+  -scan-file string
         File containing URLs to scan
+  -o string
+        Output file to save scan results
   -concurrency int
-        Number of concurrent scans (default 3)
+        Number of concurrent scans (default 5)
   -headless
         Run in headless mode
-  -timeout int
-        Request timeout in seconds (default 30)
-  -output string
-        Output file for results
+  -timeout duration
+        Request timeout (default 2m)
+  -crawl-only
+        Only crawl domain and save URLs to file
   -help
         Show help information
 ```
@@ -70,14 +72,24 @@ Options:
 
 ### Scan Google Firing Range
 ```bash
-./xss-scanner -d "public-firing-range.appspot.com" -concurrency 3 -headless
+./xss-scanner -d "public-firing-range.appspot.com" -concurrency 3 -headless -o results.json
 ```
 
 ### Scan from URL list
 ```bash
 echo "https://example.com" > urls.txt
 echo "https://test.com" >> urls.txt
-./xss-scanner -file urls.txt -concurrency 5 -headless
+./xss-scanner -scan-file urls.txt -concurrency 5 -headless -o results.json
+```
+
+### Crawl only and save URLs
+```bash
+./xss-scanner -d "example.com" -crawl-only -o crawled_urls.txt
+```
+
+### Scan single URL and save results
+```bash
+./xss-scanner -url "https://example.com" -o single_scan.json
 ```
 
 ## Fleet Deployment
