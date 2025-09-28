@@ -153,8 +153,8 @@ func (c *Crawler) worker(wg *sync.WaitGroup) {
 				return
 			}
 			c.crawlPage(pageURL)
-		case <-time.After(30 * time.Second):
-			// Timeout if no work for 30 seconds
+		case <-time.After(10 * time.Second):
+			// Timeout if no work for 10 seconds
 			return
 		}
 	}
