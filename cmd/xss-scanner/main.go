@@ -1045,18 +1045,17 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 	for {
 		time.Sleep(2 * time.Second)
 		
-		// Check if all scans are completed
-		scanMutex.Lock()
-		allCompleted := true
-		for _, url := range urls {
-			if status, exists := scanStatus[url]; !exists || status != "completed" {
-				allCompleted = false
-				break
-			}
-		}
-		scanMutex.Unlock()
+		// Check if all discovered URLs have been scanned
+		crawlMutex.RLock()
+		status, exists := crawlStatuses[scanID]
+		crawlMutex.RUnlock()
 		
-		if allCompleted {
+		if !exists {
+			log.Printf("Scan status not found, waiting...")
+			continue
+		}
+		
+		if status.Status == "completed" {
 			log.Printf("File scan completed for: %s", filename)
 			
 			// Save results to output file if specified
@@ -1066,7 +1065,39 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 			break
 		}
 		
-		log.Printf("Scanning in progress...")
+		// Check if all discovered URLs have been scanned
+		scanMutex.Lock()
+		allDiscoveredScanned := true
+		for _, discoveredURL := range status.DiscoveredURLs {
+			if urlStatus, exists := scanStatus[discoveredURL]; !exists || urlStatus != "completed" {
+				allDiscoveredScanned = false
+				break
+			}
+		}
+		scanMutex.Unlock()
+		
+		if allDiscoveredScanned && len(status.DiscoveredURLs) > 0 {
+			// Mark as completed
+			crawlMutex.Lock()
+			if status, exists := crawlStatuses[scanID]; exists {
+				status.Status = "completed"
+				status.ScannedURLs = status.DiscoveredURLs
+				now := time.Now()
+				status.EndTime = &now
+			}
+			crawlMutex.Unlock()
+			
+			log.Printf("File scan completed for: %s", filename)
+			
+			// Save results to output file if specified
+			if outputFile != "" {
+				saveFileScanResults(scanID, outputFile)
+			}
+			break
+		}
+		
+		log.Printf("Scanning in progress... (discovered: %d, scanned: %d)", 
+			len(status.DiscoveredURLs), len(status.ScannedURLs))
 	}
 }
 

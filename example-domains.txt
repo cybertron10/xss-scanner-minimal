@@ -1,0 +1,17 @@
+# Example domains for XSS scanning
+# Remove the # to include a domain in the scan
+
+# Test domains (safe for testing)
+public-firing-range.appspot.com
+httpbin.org
+example.com
+testphp.vulnweb.com
+
+# Production domains (uncomment only if you have permission)
+# google.com
+# github.com
+# stackoverflow.com
+
+# Add your own domains here
+# your-domain.com
+# target-site.org
