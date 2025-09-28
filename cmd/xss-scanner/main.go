@@ -33,7 +33,9 @@ func main() {
 	var (
 		scanURL      = flag.String("url", "", "URL to scan for XSS vulnerabilities")
 		scanDomain   = flag.String("d", "", "Domain to scan for XSS vulnerabilities")
-		crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
+        crawlOnly    = flag.Bool("crawl-only", false, "Only crawl domain and save URLs to file")
+        // New alias flag per user request: crawl only and write to urls.txt
+        crawl        = flag.Bool("crawl", false, "Crawl only; write URLs to urls.txt and exit (no XSS scan)")
 		scanFile     = flag.String("scan-file", "", "File containing URLs to scan for XSS")
 		outputFile   = flag.String("o", "", "Output file to save scan results")
 		concurrency  = flag.Int("concurrency", 5, "Number of concurrent scans (1-20, default: 5)")
@@ -66,10 +68,10 @@ func main() {
 	}
 
 	// Check if domain scanning is requested
-	if *scanDomain != "" {
+    if *scanDomain != "" {
 		if *quiet { log.SetOutput(io.Discard) }
 		
-		if *crawlOnly {
+        if *crawlOnly || *crawl {
 			// Only crawl domain and save URLs to file
 			runDomainCrawlOnly(*scanDomain, *outputFile)
 		} else {
@@ -984,30 +986,35 @@ func runDomainCrawlOnly(domain string, outputFile string) {
 		baseURL += "/"
 	}
 
-	// Crawl the domain
-	discoveredURLs := crawlDomain(baseURL, scanID)
-	
-	// Save to custom output file if specified
-	if outputFile != "" {
-		// Save discovered URLs to custom output file
-		file, err := os.Create(outputFile)
-		if err != nil {
-			log.Fatalf("Failed to create output file: %v", err)
-		}
-		defer file.Close()
-		
-		fmt.Fprintf(file, "Crawled URLs for %s\n", domain)
-		fmt.Fprintf(file, "Total URLs found: %d\n\n", len(discoveredURLs))
-		
-		for i, url := range discoveredURLs {
-			fmt.Fprintf(file, "%d. %s\n", i+1, url)
-		}
-		
-		log.Printf("Crawling completed. Found %d URLs. Saved to: %s", len(discoveredURLs), outputFile)
-	} else {
-		log.Printf("Crawling completed. Found %d URLs. Saved to: crawled_urls_%s.txt", len(discoveredURLs), scanID)
-		log.Printf("To scan these URLs, use: bin\\xss-scanner.exe -scan-file crawled_urls_%s.txt -concurrency 3", scanID)
-	}
+    // Crawl the domain
+    discoveredURLs := crawlDomain(baseURL, scanID)
+
+    // Deduplicate and write plain URLs to urls.txt (or to -o if provided)
+    outPath := "urls.txt"
+    if outputFile != "" {
+        outPath = outputFile
+    }
+
+    seen := make(map[string]struct{}, len(discoveredURLs))
+    unique := make([]string, 0, len(discoveredURLs))
+    for _, u := range discoveredURLs {
+        if _, ok := seen[u]; ok {
+            continue
+        }
+        seen[u] = struct{}{}
+        unique = append(unique, u)
+    }
+
+    f, err := os.Create(outPath)
+    if err != nil {
+        log.Fatalf("Failed to create %s: %v", outPath, err)
+    }
+    for _, u := range unique {
+        _, _ = f.WriteString(u + "\n")
+    }
+    _ = f.Close()
+
+    log.Printf("Crawling completed. Wrote %d URLs to %s", len(unique), outPath)
 }
 
 // runScanFromFile scans URLs or domains from a file
