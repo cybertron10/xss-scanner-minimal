@@ -1120,12 +1120,27 @@ func readURLsFromFile(filename string) ([]string, error) {
 			continue
 		}
 		
-		// Extract URL from lines like "1. https://example.com"
+		// Extract URL from lines like "1. https://example.com" or direct URLs
 		if strings.Contains(line, "https://") {
 			parts := strings.SplitN(line, " ", 2)
 			if len(parts) > 1 {
+				// Format: "1. https://example.com"
 				url := parts[1]
 				urls = append(urls, url)
+			} else {
+				// Format: "https://example.com" (direct URL)
+				urls = append(urls, line)
+			}
+		} else if strings.Contains(line, "http://") {
+			// Handle http:// URLs
+			parts := strings.SplitN(line, " ", 2)
+			if len(parts) > 1 {
+				// Format: "1. http://example.com"
+				url := parts[1]
+				urls = append(urls, url)
+			} else {
+				// Format: "http://example.com" (direct URL)
+				urls = append(urls, line)
 			}
 		} else {
 			// Treat as domain/subdomain if it doesn't contain http
