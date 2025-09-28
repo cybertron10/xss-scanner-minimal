@@ -53,7 +53,7 @@ Options:
   -d string
         Domain to crawl and scan
   -scan-file string
-        File containing URLs to scan
+        File containing domains/subdomains or URLs to crawl and scan
   -o string
         Output file to save scan results
   -concurrency int
@@ -75,11 +75,20 @@ Options:
 ./xss-scanner -d "public-firing-range.appspot.com" -concurrency 3 -headless -o results.json
 ```
 
-### Scan from URL list
+### Scan from domain/subdomain list
 ```bash
-echo "https://example.com" > urls.txt
-echo "https://test.com" >> urls.txt
-./xss-scanner -scan-file urls.txt -concurrency 5 -headless -o results.json
+echo "example.com" > domains.txt
+echo "subdomain.example.com" >> domains.txt
+echo "test.com" >> domains.txt
+./xss-scanner -scan-file domains.txt -concurrency 5 -headless -o results.json
+```
+
+### Scan from mixed URL/domain list
+```bash
+echo "example.com" > targets.txt
+echo "https://specific-page.com" >> targets.txt
+echo "subdomain.test.com" >> targets.txt
+./xss-scanner -scan-file targets.txt -concurrency 5 -headless -o results.json
 ```
 
 ### Crawl only and save URLs

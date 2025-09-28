@@ -1011,7 +1011,7 @@ func runDomainCrawlOnly(domain string, outputFile string) {
 	}
 }
 
-// runScanFromFile scans URLs from a file
+// runScanFromFile scans URLs or domains from a file
 func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string) {
 	log.Printf("Starting scan from file: %s (concurrency: %d)", filename, concurrency)
 	
@@ -1019,13 +1019,13 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 	cleanupAllResultsFiles()
 	log.Printf("Cleaned up old scan results files")
 	
-	// Read URLs from file
+	// Read URLs/domains from file
 	urls, err := readURLsFromFile(filename)
 	if err != nil {
 		log.Fatalf("Error reading URLs from file: %v", err)
 	}
 	
-	log.Printf("Found %d URLs to scan", len(urls))
+	log.Printf("Found %d URLs/domains to scan", len(urls))
 	
 	// Generate scan ID
 	scanID := "file_scan_" + strconv.FormatInt(time.Now().Unix(), 10)
@@ -1037,8 +1037,8 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 	// Start worker processes
 	go processScanQueue(quiet)
 	
-	// Start scanning
-	startConcurrentScanning(urls, scanID)
+	// Start domain crawling for each URL/domain
+	startFileDomainCrawling(urls, scanID)
 	
 	// Wait for scanning to complete
 	log.Printf("Waiting for scanning to complete...")
@@ -1070,7 +1070,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 	}
 }
 
-// readURLsFromFile reads URLs from a crawled URLs file
+// readURLsFromFile reads URLs or domains from a file
 func readURLsFromFile(filename string) ([]string, error) {
 	content, err := os.ReadFile(filename)
 	if err != nil {
@@ -1095,6 +1095,24 @@ func readURLsFromFile(filename string) ([]string, error) {
 			if len(parts) > 1 {
 				url := parts[1]
 				urls = append(urls, url)
+			}
+		} else {
+			// Treat as domain/subdomain if it doesn't contain http
+			// Clean domain name
+			domain := line
+			if strings.HasPrefix(domain, "http://") || strings.HasPrefix(domain, "https://") {
+				domain = strings.Split(domain, "://")[1]
+			}
+			if strings.HasPrefix(domain, "www.") {
+				domain = domain[4:]
+			}
+			if strings.HasSuffix(domain, "/") && !strings.Contains(domain[1:], "/") {
+				domain = domain[:len(domain)-1]
+			}
+			
+			// Add https:// prefix for domain crawling
+			if domain != "" {
+				urls = append(urls, "https://"+domain)
 			}
 		}
 	}
@@ -1149,6 +1167,70 @@ func runDomainScan(domain string, concurrency int, quiet, headless, fastMode, ul
 			status.Status, len(status.DiscoveredURLs), len(status.ScannedURLs))
 		time.Sleep(2 * time.Second)
 	}
+}
+
+// startFileDomainCrawling starts domain crawling for each URL/domain in the file
+func startFileDomainCrawling(urls []string, scanID string) {
+	log.Printf("Starting domain crawling for %d URLs/domains", len(urls))
+	
+	// Initialize crawl status for file scan
+	crawlMutex.Lock()
+	crawlStatuses[scanID] = &CrawlStatus{
+		ScanID:         scanID,
+		Domain:         "file_scan",
+		Status:         "crawling",
+		DiscoveredURLs: []string{},
+		ScannedURLs:    []string{},
+		StartTime:      time.Now(),
+	}
+	crawlMutex.Unlock()
+	
+	// Crawl each domain/URL
+	for i, url := range urls {
+		log.Printf("Crawling %d/%d: %s", i+1, len(urls), url)
+		
+		// Parse URL to get domain
+		parsedURL, err := url.Parse(url)
+		if err != nil {
+			log.Printf("Error parsing URL %s: %v", url, err)
+			continue
+		}
+		
+		// Clean domain name
+		domain := parsedURL.Host
+		if strings.HasPrefix(domain, "www.") {
+			domain = domain[4:]
+		}
+		
+		// Determine base URL for crawling
+		baseURL := url
+		if !strings.HasSuffix(baseURL, "/") {
+			baseURL += "/"
+		}
+		
+		// Crawl the domain
+		discoveredURLs := crawlDomain(baseURL, scanID)
+		
+		// Update crawl status
+		crawlMutex.Lock()
+		if status, exists := crawlStatuses[scanID]; exists {
+			status.DiscoveredURLs = append(status.DiscoveredURLs, discoveredURLs...)
+		}
+		crawlMutex.Unlock()
+		
+		log.Printf("Crawled %s: found %d URLs", domain, len(discoveredURLs))
+	}
+	
+	// Update status to scanning
+	crawlMutex.Lock()
+	if status, exists := crawlStatuses[scanID]; exists {
+		status.Status = "scanning"
+		// Start scanning all discovered URLs
+		startConcurrentScanning(status.DiscoveredURLs, scanID)
+	}
+	crawlMutex.Unlock()
+	
+	log.Printf("Domain crawling completed. Starting XSS scanning...")
 }
 
 // saveFileScanResults saves file scan results to output file
