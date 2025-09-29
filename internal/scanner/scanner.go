@@ -560,13 +560,22 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 	defer cancel()
 	
 	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	
+	if !s.config.Quiet {
+		log.Printf("Running Arjun command: %s", cmd.String())
+		log.Printf("Output file: %s", tmpFile.Name())
+	}
+	
 	output, err := cmd.Output()
 	if err != nil {
 		if !s.config.Quiet {
 			log.Printf("Arjun execution failed: %v, output: %s", err, string(output))
-			log.Printf("Arjun command: %s", cmd.String())
 		}
 		return parameters
+	}
+	
+	if !s.config.Quiet {
+		log.Printf("Arjun execution successful, output: %s", string(output))
 	}
 	
 	// Check if output file exists and has content
@@ -575,6 +584,19 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 			log.Printf("Arjun output file not created: %s", tmpFile.Name())
 		}
 		return parameters
+	}
+	
+	// Check file size
+	if fileInfo, err := os.Stat(tmpFile.Name()); err == nil {
+		if !s.config.Quiet {
+			log.Printf("Arjun output file size: %d bytes", fileInfo.Size())
+		}
+		if fileInfo.Size() == 0 {
+			if !s.config.Quiet {
+				log.Printf("Arjun output file is empty")
+			}
+			return parameters
+		}
 	}
 	
 	// Parse Arjun output
