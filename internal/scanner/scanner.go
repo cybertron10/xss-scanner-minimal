@@ -599,15 +599,18 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 		}
 	}
 	
+	// Debug: Always show the output file content
+	if !s.config.Quiet {
+		if content, readErr := os.ReadFile(tmpFile.Name()); readErr == nil {
+			log.Printf("Arjun output file content: %s", string(content))
+		}
+	}
+	
 	// Parse Arjun output
 	arjunParams, err := s.parseArjunOutput(tmpFile.Name())
 	if err != nil {
 		if !s.config.Quiet {
 			log.Printf("Error parsing Arjun output: %v", err)
-			// Try to read the file content for debugging
-			if content, readErr := os.ReadFile(tmpFile.Name()); readErr == nil {
-				log.Printf("Arjun output file content: %s", string(content))
-			}
 		}
 		return parameters
 	}
