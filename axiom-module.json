@@ -1,6 +1,0 @@
-[
-  {
-    "command": "echo '[]' > output && while IFS= read -r domain; do echo \"Scanning $domain...\"; /root/xss-scanner-minimal/xss-scanner -d \"$domain\" -concurrency 3 -headless -o \"temp_$(echo $domain | tr '/' '_' | tr ':' '_').json\"; done < input && for file in temp_*.json; do if [ -f \"$file\" ]; then python3 -c \"import json; data=json.load(open('$file')); merged=json.load(open('output')); merged.extend(data if isinstance(data, list) else [data]); json.dump(merged, open('output', 'w'), indent=2)\"; fi; done && rm -f temp_*.json",
-    "ext": "txt"
-  }
-]

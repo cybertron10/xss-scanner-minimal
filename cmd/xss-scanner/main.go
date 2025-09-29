@@ -499,40 +499,68 @@ func startDomainCrawling(domain, scanID string) {
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
+	timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+	
 	for {
-		time.Sleep(2 * time.Second)
-		
-		// Check if all URLs have been scanned
-		scanMutex.Lock()
-		allScanned := true
-		for _, url := range discoveredURLs {
-			if status, exists := scanStatus[url]; !exists || status != "completed" {
-				allScanned = false
-				break
-			}
-		}
-		scanMutex.Unlock()
-		
-		if allScanned {
-			log.Printf("All URLs have been scanned successfully")
-			break
-		}
-		
-		// Update scanned URLs count
-		crawlMutex.Lock()
-		if status, exists := crawlStatuses[scanID]; exists {
-			scannedCount := 0
+		select {
+		case <-timeoutChan:
+			log.Printf("Scan timeout reached (30 minutes). Stopping scan.")
+			scanMutex.Lock()
+			done := 0
+			completed := 0
 			for _, url := range discoveredURLs {
-				if scanStatus[url] == "completed" {
-					scannedCount++
+				if status, exists := scanStatus[url]; exists {
+					if status == "completed" || status == "error" {
+						done++
+					}
+					if status == "completed" {
+						completed++
+					}
 				}
 			}
-			status.ScannedURLs = discoveredURLs[:scannedCount]
+			scanMutex.Unlock()
+			log.Printf("Domain scan timed out: %d completed, %d failed, %d pending", completed, done-completed, len(discoveredURLs)-done)
+			break
+			
+		case <-ticker.C:
+			// Check if all URLs have been scanned
+			scanMutex.Lock()
+			allScanned := true
+			done := 0
+			completed := 0
+			for _, url := range discoveredURLs {
+				if status, exists := scanStatus[url]; exists {
+					if status == "completed" || status == "error" {
+						done++
+					}
+					if status == "completed" {
+						completed++
+					}
+					if status != "completed" {
+						allScanned = false
+					}
+				} else {
+					allScanned = false
+				}
+			}
+			scanMutex.Unlock()
+			
+			if allScanned {
+				log.Printf("All URLs have been scanned successfully")
+				break
+			}
+			
+			// Update scanned URLs count
+			crawlMutex.Lock()
+			if status, exists := crawlStatuses[scanID]; exists {
+				status.ScannedURLs = discoveredURLs[:completed]
+			}
+			crawlMutex.Unlock()
+			
+			log.Printf("Scanning in progress... (%d/%d URLs completed)", completed, len(discoveredURLs))
 		}
-		crawlMutex.Unlock()
-		
-		log.Printf("Scanning in progress... (%d/%d URLs completed)", 
-			len(crawlStatuses[scanID].ScannedURLs), len(discoveredURLs))
 	}
 
 	// Mark as completed
@@ -600,40 +628,68 @@ func startDomainCrawlingWithConcurrency(domain, scanID string, concurrency int) 
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
+	timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+	ticker := time.NewTicker(2 * time.Second)
+	defer ticker.Stop()
+	
 	for {
-		time.Sleep(2 * time.Second)
-		
-		// Check if all URLs have been scanned
-		scanMutex.Lock()
-		allScanned := true
-		for _, url := range discoveredURLs {
-			if status, exists := scanStatus[url]; !exists || status != "completed" {
-				allScanned = false
-				break
-			}
-		}
-		scanMutex.Unlock()
-		
-		if allScanned {
-			log.Printf("All URLs have been scanned successfully")
-			break
-		}
-		
-		// Update scanned URLs count
-		crawlMutex.Lock()
-		if status, exists := crawlStatuses[scanID]; exists {
-			scannedCount := 0
+		select {
+		case <-timeoutChan:
+			log.Printf("Scan timeout reached (30 minutes). Stopping scan.")
+			scanMutex.Lock()
+			done := 0
+			completed := 0
 			for _, url := range discoveredURLs {
-				if scanStatus[url] == "completed" {
-					scannedCount++
+				if status, exists := scanStatus[url]; exists {
+					if status == "completed" || status == "error" {
+						done++
+					}
+					if status == "completed" {
+						completed++
+					}
 				}
 			}
-			status.ScannedURLs = discoveredURLs[:scannedCount]
+			scanMutex.Unlock()
+			log.Printf("Domain scan timed out: %d completed, %d failed, %d pending", completed, done-completed, len(discoveredURLs)-done)
+			break
+			
+		case <-ticker.C:
+			// Check if all URLs have been scanned
+			scanMutex.Lock()
+			allScanned := true
+			done := 0
+			completed := 0
+			for _, url := range discoveredURLs {
+				if status, exists := scanStatus[url]; exists {
+					if status == "completed" || status == "error" {
+						done++
+					}
+					if status == "completed" {
+						completed++
+					}
+					if status != "completed" {
+						allScanned = false
+					}
+				} else {
+					allScanned = false
+				}
+			}
+			scanMutex.Unlock()
+			
+			if allScanned {
+				log.Printf("All URLs have been scanned successfully")
+				break
+			}
+			
+			// Update scanned URLs count
+			crawlMutex.Lock()
+			if status, exists := crawlStatuses[scanID]; exists {
+				status.ScannedURLs = discoveredURLs[:completed]
+			}
+			crawlMutex.Unlock()
+			
+			log.Printf("Scanning in progress... (%d/%d URLs completed)", completed, len(discoveredURLs))
 		}
-		crawlMutex.Unlock()
-		
-		log.Printf("Scanning in progress... (%d/%d URLs completed)", 
-			len(crawlStatuses[scanID].ScannedURLs), len(discoveredURLs))
 	}
 
 	// Mark as completed
@@ -876,9 +932,7 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 		// Concurrent scanning with specified concurrency
 		log.Printf("Using concurrent scanning with %d workers", concurrency)
 		
-		// Create semaphore for concurrency control
-		semaphore := make(chan struct{}, concurrency)
-		
+		// Queue all URLs synchronously to avoid race conditions
 		for i, url := range urls {
 			log.Printf("Queuing URL %d/%d: %s", i+1, len(urls), url)
 			
@@ -897,18 +951,9 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 				ScanID:   scanID,
 			}
 			
-			// Add to concurrent queue with semaphore
-			go func(req scanRequest) {
-				semaphore <- struct{}{} // Acquire semaphore
-				defer func() { <-semaphore }() // Release semaphore
-				
-				select {
-				case scanQueue <- req:
-					log.Printf("Queued URL for concurrent scanning: %s", req.URL)
-				default:
-					log.Printf("Concurrent queue full, skipping URL: %s", req.URL)
-				}
-			}(scanReq)
+			// Add to concurrent queue synchronously (blocking)
+			scanQueue <- scanReq
+			log.Printf("Queued URL for concurrent scanning: %s", url)
 		}
 	}
 }
@@ -1111,30 +1156,63 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
     // Enqueue URLs directly for scanning (skip crawling)
     startConcurrentScanningWithConcurrency(urls, scanID, concurrency)
 
-    // Wait for all URLs to be scanned
+    // Wait for all URLs to be scanned (treat completed OR error as terminal)
     log.Printf("Waiting for URL scanning to complete...")
+    timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+    ticker := time.NewTicker(2 * time.Second)
+    defer ticker.Stop()
+    
     for {
-        time.Sleep(2 * time.Second)
-
-        scanMutex.Lock()
-        completed := 0
-        for _, u := range urls {
-            if urlStatus, exists := scanStatus[u]; exists && urlStatus == "completed" {
-                completed++
+        select {
+        case <-timeoutChan:
+            log.Printf("Scan timeout reached (30 minutes). Stopping scan.")
+            scanMutex.Lock()
+            done := 0
+            completed := 0
+            for _, u := range urls {
+                if urlStatus, exists := scanStatus[u]; exists {
+                    if urlStatus == "completed" || urlStatus == "error" {
+                        done++
+                    }
+                    if urlStatus == "completed" {
+                        completed++
+                    }
+                }
             }
-        }
-        allDone := completed == len(urls)
-        scanMutex.Unlock()
-
-        if allDone {
-            log.Printf("File URL scan completed for: %s", filename)
+            scanMutex.Unlock()
+            log.Printf("File URL scan timed out: %d completed, %d failed, %d pending", completed, done-completed, len(urls)-done)
             if outputFile != "" {
                 saveFileScanResults(scanID, outputFile)
             }
-            break
-        }
+            return
+            
+        case <-ticker.C:
+            scanMutex.Lock()
+            done := 0
+            completed := 0
+            for _, u := range urls {
+                if urlStatus, exists := scanStatus[u]; exists {
+                    if urlStatus == "completed" || urlStatus == "error" {
+                        done++
+                    }
+                    if urlStatus == "completed" {
+                        completed++
+                    }
+                }
+            }
+            allDone := done == len(urls)
+            scanMutex.Unlock()
 
-        log.Printf("Scanning in progress... (%d/%d completed)", completed, len(urls))
+            if allDone {
+                log.Printf("File URL scan finished: %d completed, %d failed", completed, len(urls)-completed)
+                if outputFile != "" {
+                    saveFileScanResults(scanID, outputFile)
+                }
+                return
+            }
+
+            log.Printf("Scanning in progress... (%d/%d done)", done, len(urls))
+        }
     }
 }
 
