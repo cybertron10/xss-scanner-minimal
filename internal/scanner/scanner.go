@@ -4,11 +4,14 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
@@ -428,6 +431,12 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 	formParams := s.discoverFormParameters(parsedURL)
 	parameters = append(parameters, formParams...)
 
+	// Use Arjun for enhanced parameter discovery if enabled
+	if s.config.UseArjun {
+		arjunParams := s.discoverParametersWithArjun(parsedURL)
+		parameters = append(parameters, arjunParams...)
+	}
+
 	// Discover JavaScript parameters (DISABLED - too many false positives)
 	// jsParams := s.discoverJavaScriptParameters(parsedURL)
 	// parameters = append(parameters, jsParams...)
@@ -441,8 +450,8 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 	}
 
 	if !s.config.Quiet {
-		log.Printf("Total parameters discovered: %d (query: %d, form: %d)", 
-			len(parameters), len(queryParams), len(formParams))
+		log.Printf("Total parameters discovered: %d (query: %d, form: %d, arjun: %d)", 
+			len(parameters), len(queryParams), len(formParams), len(parameters)-len(queryParams)-len(formParams))
 	}
 
 	return parameters
@@ -503,6 +512,123 @@ func (s *Scanner) parseFormInputs(html string) []string {
 	}
 	
 	return formParams
+}
+
+// discoverParametersWithArjun uses Arjun tool for enhanced parameter discovery
+func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
+	var parameters []Parameter
+	
+	if !s.config.Quiet {
+		log.Printf("Running Arjun parameter discovery for: %s", parsedURL.String())
+	}
+	
+	// Check if Arjun is available
+	if !s.isArjunAvailable() {
+		if !s.config.Quiet {
+			log.Printf("Arjun not available, skipping enhanced parameter discovery")
+		}
+		return parameters
+	}
+	
+	// Create temporary file for Arjun output
+	tmpFile, err := os.CreateTemp("", "arjun_output_*.json")
+	if err != nil {
+		if !s.config.Quiet {
+			log.Printf("Error creating temp file for Arjun: %v", err)
+		}
+		return parameters
+	}
+	defer os.Remove(tmpFile.Name())
+	tmpFile.Close()
+	
+	// Build Arjun command
+	cmd := exec.Command("arjun", 
+		"-u", parsedURL.String(),
+		"-o", tmpFile.Name(),
+		"-oT", "json",
+		"-q", // Quiet mode
+		"-t", "10", // 10 threads
+		"-w", "1000", // 1000 wordlist entries
+	)
+	
+	// Add headers if available
+	if len(s.config.Headers) > 0 {
+		for key, value := range s.config.Headers {
+			cmd.Args = append(cmd.Args, "-H", fmt.Sprintf("%s: %s", key, value))
+		}
+	}
+	
+	// Run Arjun with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	
+	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	output, err := cmd.Output()
+	if err != nil {
+		if !s.config.Quiet {
+			log.Printf("Arjun execution failed: %v, output: %s", err, string(output))
+		}
+		return parameters
+	}
+	
+	// Parse Arjun JSON output
+	arjunParams, err := s.parseArjunOutput(tmpFile.Name())
+	if err != nil {
+		if !s.config.Quiet {
+			log.Printf("Error parsing Arjun output: %v", err)
+		}
+		return parameters
+	}
+	
+	// Convert Arjun parameters to our Parameter format
+	for _, paramName := range arjunParams {
+		parameters = append(parameters, Parameter{
+			Name: paramName,
+			Type: "arjun",
+		})
+	}
+	
+	if !s.config.Quiet && len(parameters) > 0 {
+		log.Printf("Arjun discovered %d additional parameters: %v", len(parameters), 
+			s.getParameterNames(parameters))
+	}
+	
+	return parameters
+}
+
+// isArjunAvailable checks if Arjun is installed and available
+func (s *Scanner) isArjunAvailable() bool {
+	cmd := exec.Command("arjun", "--help")
+	err := cmd.Run()
+	return err == nil
+}
+
+// parseArjunOutput parses Arjun JSON output file
+func (s *Scanner) parseArjunOutput(filename string) ([]string, error) {
+	var parameters []string
+	
+	// Read the JSON file
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return parameters, err
+	}
+	
+	// Parse JSON
+	var result map[string]interface{}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return parameters, err
+	}
+	
+	// Extract parameters from Arjun output
+	if params, ok := result["params"].([]interface{}); ok {
+		for _, param := range params {
+			if paramStr, ok := param.(string); ok {
+				parameters = append(parameters, paramStr)
+			}
+		}
+	}
+	
+	return parameters, nil
 }
 
 // discoverJavaScriptParameters finds parameters from JavaScript files and dynamic content

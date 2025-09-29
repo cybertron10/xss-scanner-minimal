@@ -80,6 +80,21 @@ install_package "libasound2t64" "libasound2" "libasound2-1.0.0"
 echo "🛡️ Installing wafw00f..."
 sudo apt-get install -y wafw00f
 
+# Install Arjun for parameter discovery
+echo "🔍 Installing Arjun for parameter discovery..."
+if command -v pip3 &> /dev/null; then
+    pip3 install arjun
+    echo "✅ Arjun installed via pip3"
+elif command -v pip &> /dev/null; then
+    pip install arjun
+    echo "✅ Arjun installed via pip"
+else
+    echo "⚠️  Warning: pip not found, trying to install via apt..."
+    sudo apt-get install -y python3-pip
+    pip3 install arjun
+    echo "✅ Arjun installed via pip3 (after installing pip)"
+fi
+
 # Install Go (if not already installed)
 if ! command -v go &> /dev/null; then
     echo "🔧 Installing Go..."
