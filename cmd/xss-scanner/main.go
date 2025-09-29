@@ -50,7 +50,7 @@ func main() {
 		server      = flag.Bool("server", false, "Run as HTTP server for Burp Suite extension")
 		port        = flag.String("port", "8081", "Server port (default: 8081)")
 		useParamsMap = flag.Bool("paramsmap", false, "Use ParamsMap for enhanced parameter discovery")
-		wordlist    = flag.String("wordlist", "/opt/xss-scanner/assetnote-parameters.txt", "Wordlist file for parameter discovery")
+		wordlist    = flag.String("wordlist", "param-wordlist.txt", "Wordlist file for parameter discovery")
 	)
 	flag.Parse()
 
@@ -1524,7 +1524,7 @@ func runServer(port string, quiet, headless, fastMode, ultraFast bool, timeout t
 			UltraFast:        ultraFast,
 			Timeout:          timeout,
 			UseParamsMap:     false, // Server mode doesn't support ParamsMap yet
-			WordlistFile:     "/opt/xss-scanner/assetnote-parameters.txt",
+			WordlistFile:     "param-wordlist.txt",
 		}
 		
 

@@ -90,38 +90,6 @@ else
     echo "   Install Go first, then run: go install -v github.com/pyneda/paramsmap@latest"
 fi
 
-# Download comprehensive parameter wordlist
-echo "📋 Downloading comprehensive parameter wordlist..."
-WORDLIST_DIR="/opt/xss-scanner"
-WORDLIST_FILE="$WORDLIST_DIR/assetnote-parameters.txt"
-
-# Create directory if it doesn't exist
-sudo mkdir -p "$WORDLIST_DIR"
-
-# Download the wordlist
-if command -v wget &> /dev/null; then
-    sudo wget -O "$WORDLIST_FILE" "https://wordlists-cdn.assetnote.io/data/automated/httparchive_parameters_top_1m_2025_09_27.txt"
-elif command -v curl &> /dev/null; then
-    sudo curl -o "$WORDLIST_FILE" "https://wordlists-cdn.assetnote.io/data/automated/httparchive_parameters_top_1m_2025_09_27.txt"
-else
-    echo "⚠️  Warning: Neither wget nor curl found, wordlist download skipped"
-    echo "   Install wget or curl, then download manually:"
-    echo "   wget -O $WORDLIST_FILE https://wordlists-cdn.assetnote.io/data/automated/httparchive_parameters_top_1m_2025_09_27.txt"
-fi
-
-# Check if download was successful
-if [ -f "$WORDLIST_FILE" ]; then
-    WORDLIST_COUNT=$(wc -l < "$WORDLIST_FILE")
-    echo "✅ Assetnote parameter wordlist downloaded successfully"
-    echo "   Location: $WORDLIST_FILE"
-    echo "   Parameters: $WORDLIST_COUNT"
-    echo "   This will be used as the default wordlist for parameter discovery"
-    
-    # Make it readable by all users
-    sudo chmod 644 "$WORDLIST_FILE"
-else
-    echo "❌ Failed to download wordlist"
-fi
 
 
 # Install Go (if not already installed)
