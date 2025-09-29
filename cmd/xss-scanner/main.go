@@ -48,8 +48,9 @@ func main() {
 		ultraFast   = flag.Bool("ultra-fast", false, "Enable ultra-fast mode (skip character analysis entirely)")
 		timeout     = flag.Duration("timeout", 2*time.Minute, "Scan timeout")
 		server      = flag.Bool("server", false, "Run as HTTP server for Burp Suite extension")
-		useArjun    = flag.Bool("arjun", false, "Use Arjun for enhanced parameter discovery")
 		port        = flag.String("port", "8081", "Server port (default: 8081)")
+		useParamsMap = flag.Bool("paramsmap", false, "Use ParamsMap for enhanced parameter discovery")
+		wordlist    = flag.String("wordlist", "/opt/xss-scanner/assetnote-parameters.txt", "Wordlist file for parameter discovery")
 	)
 	flag.Parse()
 
@@ -139,7 +140,8 @@ func main() {
 		Timeout:          *timeout,
 		WAFDetected:      wafDetected,
 		WAFName:          wafName,
-		UseArjun:         *useArjun,
+		UseParamsMap:     *useParamsMap,
+		WordlistFile:     *wordlist,
 	}
 
 	// Create scanner instance
@@ -1521,7 +1523,8 @@ func runServer(port string, quiet, headless, fastMode, ultraFast bool, timeout t
 			FastMode:         fastMode,
 			UltraFast:        ultraFast,
 			Timeout:          timeout,
-			UseArjun:         false, // Server mode doesn't support Arjun yet
+			UseParamsMap:     false, // Server mode doesn't support ParamsMap yet
+			WordlistFile:     "/opt/xss-scanner/assetnote-parameters.txt",
 		}
 		
 

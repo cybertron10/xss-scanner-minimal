@@ -16,8 +16,9 @@ type Config struct {
 	// WAF detection flags (set by server once per host)
 	WAFDetected      bool
 	WAFName          string
-	// Arjun parameter discovery
-	UseArjun         bool
+	// ParamsMap parameter discovery
+	UseParamsMap     bool
+	WordlistFile     string
 }
 
 // ScanResult represents the result of an XSS scan

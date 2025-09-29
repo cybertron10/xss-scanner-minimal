@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -426,15 +427,16 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 		})
 	}
 
+	// Use ParamsMap for enhanced parameter discovery if enabled
+	if s.config.UseParamsMap {
+		paramsMapParams := s.discoverParametersWithParamsMap(parsedURL)
+		parameters = append(parameters, paramsMapParams...)
+	}
+
 	// Discover form parameters from HTML content
 	formParams := s.discoverFormParameters(parsedURL)
 	parameters = append(parameters, formParams...)
 
-	// Use Arjun for enhanced parameter discovery if enabled
-	if s.config.UseArjun {
-		arjunParams := s.discoverParametersWithArjun(parsedURL)
-		parameters = append(parameters, arjunParams...)
-	}
 
 	// Discover JavaScript parameters (DISABLED - too many false positives)
 	// jsParams := s.discoverJavaScriptParameters(parsedURL)
@@ -449,8 +451,12 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 	}
 
 	if !s.config.Quiet {
-		log.Printf("Total parameters discovered: %d (query: %d, form: %d, arjun: %d)", 
-			len(parameters), len(queryParams), len(formParams), len(parameters)-len(queryParams)-len(formParams))
+		paramsMapCount := 0
+		if s.config.UseParamsMap {
+			paramsMapCount = len(parameters) - len(queryParams) - len(formParams)
+		}
+		log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d)", 
+			len(parameters), len(queryParams), len(formParams), paramsMapCount)
 	}
 
 	return parameters
@@ -513,200 +519,147 @@ func (s *Scanner) parseFormInputs(html string) []string {
 	return formParams
 }
 
-// discoverParametersWithArjun uses Arjun tool for enhanced parameter discovery
-func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
+// ParamsMapResult represents the JSON output from ParamsMap
+type ParamsMapResult struct {
+	Params        []string `json:"params"`
+	FormParams    []string `json:"form_params"`
+	TotalRequests int      `json:"total_requests"`
+	Aborted       bool     `json:"aborted"`
+	AbortReason   string   `json:"abort_reason"`
+}
+
+// discoverParametersWithParamsMap uses ParamsMap tool for enhanced parameter discovery
+func (s *Scanner) discoverParametersWithParamsMap(parsedURL *url.URL) []Parameter {
 	var parameters []Parameter
-	
+
 	if !s.config.Quiet {
-		log.Printf("Running Arjun parameter discovery for: %s", parsedURL.String())
+		log.Printf("Running ParamsMap parameter discovery for: %s", parsedURL.String())
 	}
-	
-	// Check if Arjun is available
-	if !s.isArjunAvailable() {
+
+	if !s.isParamsMapAvailable() {
 		if !s.config.Quiet {
-			log.Printf("Arjun not available, skipping enhanced parameter discovery")
+			log.Printf("ParamsMap not available, skipping enhanced parameter discovery")
 		}
 		return parameters
 	}
-	
-	// Create temporary file for Arjun output
-	tmpFile, err := os.CreateTemp("", "arjun_output_*.json")
+
+	// Check if wordlist file exists
+	if _, err := os.Stat(s.config.WordlistFile); os.IsNotExist(err) {
+		if !s.config.Quiet {
+			log.Printf("Wordlist file not found: %s", s.config.WordlistFile)
+		}
+		return parameters
+	}
+
+	// Create temporary file for ParamsMap output
+	tmpFile, err := os.CreateTemp("", "paramsmap_output_*.json")
 	if err != nil {
 		if !s.config.Quiet {
-			log.Printf("Error creating temp file for Arjun: %v", err)
+			log.Printf("Error creating temp file for ParamsMap: %v", err)
 		}
 		return parameters
 	}
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
-	
-	// Build Arjun command - use simpler flags that are more likely to work
-	cmd := exec.Command("arjun", 
-		"-u", parsedURL.String(),
-		"-o", tmpFile.Name(),
-		"-q", // Quiet mode
-		"-t", "10", // 10 threads
+
+	// Build ParamsMap command
+	cmd := exec.Command("paramsmap",
+		"-url", parsedURL.String(),
+		"-wordlist", s.config.WordlistFile,
+		"-report", tmpFile.Name(),
+		"-chunk-size", "100", // Smaller chunks for faster processing
 	)
-	
+
 	// Add headers if available
 	if len(s.config.Headers) > 0 {
 		for key, value := range s.config.Headers {
 			cmd.Args = append(cmd.Args, "-H", fmt.Sprintf("%s: %s", key, value))
 		}
 	}
-	
-	// Run Arjun with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+	// Run ParamsMap with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	
+
 	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
-	
+
 	if !s.config.Quiet {
-		log.Printf("Running Arjun command: %s", cmd.String())
+		log.Printf("Running ParamsMap command: %s", cmd.String())
 		log.Printf("Output file: %s", tmpFile.Name())
 	}
-	
+
 	output, err := cmd.Output()
 	if err != nil {
 		if !s.config.Quiet {
-			log.Printf("Arjun execution failed: %v, output: %s", err, string(output))
+			log.Printf("ParamsMap execution failed: %v, output: %s", err, string(output))
 		}
 		return parameters
 	}
-	
+
 	if !s.config.Quiet {
-		log.Printf("Arjun execution successful, output: %s", string(output))
+		log.Printf("ParamsMap execution successful")
 	}
-	
+
 	// Check if output file exists and has content
 	if _, err := os.Stat(tmpFile.Name()); os.IsNotExist(err) {
 		if !s.config.Quiet {
-			log.Printf("Arjun output file not created: %s", tmpFile.Name())
+			log.Printf("ParamsMap output file not created: %s", tmpFile.Name())
 		}
 		return parameters
 	}
-	
-	// Check file size
-	if fileInfo, err := os.Stat(tmpFile.Name()); err == nil {
-		if !s.config.Quiet {
-			log.Printf("Arjun output file size: %d bytes", fileInfo.Size())
-		}
-		if fileInfo.Size() == 0 {
-			if !s.config.Quiet {
-				log.Printf("Arjun output file is empty")
-			}
-			return parameters
-		}
-	}
-	
-	// Debug: Always show the output file content
-	if !s.config.Quiet {
-		if content, readErr := os.ReadFile(tmpFile.Name()); readErr == nil {
-			log.Printf("Arjun output file content: %s", string(content))
-		}
-	}
-	
-	// Parse Arjun output
-	arjunParams, err := s.parseArjunOutput(tmpFile.Name())
+
+	// Parse ParamsMap output
+	paramsMapParams, err := s.parseParamsMapOutput(tmpFile.Name())
 	if err != nil {
 		if !s.config.Quiet {
-			log.Printf("Error parsing Arjun output: %v", err)
+			log.Printf("Error parsing ParamsMap output: %v", err)
 		}
 		return parameters
 	}
-	
-	// Debug: show what parameters were found
-	if !s.config.Quiet && len(arjunParams) > 0 {
-		log.Printf("Arjun found parameters: %v", arjunParams)
-	}
-	
-	// Convert Arjun parameters to our Parameter format
-	for _, paramName := range arjunParams {
+
+	// Convert ParamsMap parameters to our Parameter format
+	for _, paramName := range paramsMapParams {
 		parameters = append(parameters, Parameter{
 			Name: paramName,
-			Type: "arjun",
+			Type: "paramsmap",
 		})
 	}
-	
+
 	if !s.config.Quiet && len(parameters) > 0 {
-		log.Printf("Arjun discovered %d additional parameters: %v", len(parameters), 
+		log.Printf("ParamsMap discovered %d additional parameters: %v", len(parameters), 
 			s.getParameterNames(parameters))
 	}
-	
+
 	return parameters
 }
 
-// isArjunAvailable checks if Arjun is installed and available
-func (s *Scanner) isArjunAvailable() bool {
-	cmd := exec.Command("arjun", "--help")
+// isParamsMapAvailable checks if ParamsMap is installed and available
+func (s *Scanner) isParamsMapAvailable() bool {
+	cmd := exec.Command("paramsmap", "-h")
 	err := cmd.Run()
 	return err == nil
 }
 
-// parseArjunOutput parses Arjun output file (text format)
-func (s *Scanner) parseArjunOutput(filename string) ([]string, error) {
+// parseParamsMapOutput parses ParamsMap JSON output file
+func (s *Scanner) parseParamsMapOutput(filename string) ([]string, error) {
 	var parameters []string
-	
-	// Read the output file
+
+	// Read the JSON file
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return parameters, err
 	}
-	
-	content := string(data)
-	
-	// Arjun outputs parameters in text format, look for lines like:
-	// [+] Parameters found: q
-	// [+] Parameters found: param1, param2, param3
-	lines := strings.Split(content, "\n")
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "Parameters found:") {
-			// Extract parameters from the line
-			parts := strings.Split(line, "Parameters found:")
-			if len(parts) > 1 {
-				paramStr := strings.TrimSpace(parts[1])
-				if paramStr != "" {
-					// Split by comma and clean up
-					paramList := strings.Split(paramStr, ",")
-					for _, param := range paramList {
-						cleanParam := strings.TrimSpace(param)
-						if cleanParam != "" {
-							parameters = append(parameters, cleanParam)
-						}
-					}
-				}
-			}
-		}
+
+	// Parse JSON
+	var result ParamsMapResult
+	if err := json.Unmarshal(data, &result); err != nil {
+		return parameters, err
 	}
-	
-	// Also look for individual parameter detection lines like:
-	// [✓] parameter detected: q, based on: body length
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if strings.Contains(line, "parameter detected:") {
-			// Extract parameter name from lines like "[✓] parameter detected: q, based on: body length"
-			parts := strings.Split(line, "parameter detected:")
-			if len(parts) > 1 {
-				paramPart := strings.TrimSpace(parts[1])
-				// Extract parameter name before comma
-				if commaIndex := strings.Index(paramPart, ","); commaIndex != -1 {
-					paramName := strings.TrimSpace(paramPart[:commaIndex])
-					if paramName != "" {
-						parameters = append(parameters, paramName)
-					}
-				} else {
-					// No comma, take the whole part
-					if paramPart != "" {
-						parameters = append(parameters, paramPart)
-					}
-				}
-			}
-		}
-	}
-	
-	return parameters, nil
+
+	// Return discovered parameters
+	return result.Params, nil
 }
+
 
 // discoverJavaScriptParameters finds parameters from JavaScript files and dynamic content
 func (s *Scanner) discoverJavaScriptParameters(parsedURL *url.URL) []Parameter {
