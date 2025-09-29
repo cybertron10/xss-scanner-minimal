@@ -577,7 +577,7 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 		return parameters
 	}
 	
-	// Parse Arjun JSON output
+	// Parse Arjun output
 	arjunParams, err := s.parseArjunOutput(tmpFile.Name())
 	if err != nil {
 		if !s.config.Quiet {
@@ -588,6 +588,11 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 			}
 		}
 		return parameters
+	}
+	
+	// Debug: show what parameters were found
+	if !s.config.Quiet && len(arjunParams) > 0 {
+		log.Printf("Arjun found parameters: %v", arjunParams)
 	}
 	
 	// Convert Arjun parameters to our Parameter format
@@ -626,9 +631,11 @@ func (s *Scanner) parseArjunOutput(filename string) ([]string, error) {
 	content := string(data)
 	
 	// Arjun outputs parameters in text format, look for lines like:
+	// [+] Parameters found: q
 	// [+] Parameters found: param1, param2, param3
 	lines := strings.Split(content, "\n")
 	for _, line := range lines {
+		line = strings.TrimSpace(line)
 		if strings.Contains(line, "Parameters found:") {
 			// Extract parameters from the line
 			parts := strings.Split(line, "Parameters found:")
@@ -642,6 +649,31 @@ func (s *Scanner) parseArjunOutput(filename string) ([]string, error) {
 						if cleanParam != "" {
 							parameters = append(parameters, cleanParam)
 						}
+					}
+				}
+			}
+		}
+	}
+	
+	// Also look for individual parameter detection lines like:
+	// [✓] parameter detected: q, based on: body length
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if strings.Contains(line, "parameter detected:") {
+			// Extract parameter name from lines like "[✓] parameter detected: q, based on: body length"
+			parts := strings.Split(line, "parameter detected:")
+			if len(parts) > 1 {
+				paramPart := strings.TrimSpace(parts[1])
+				// Extract parameter name before comma
+				if commaIndex := strings.Index(paramPart, ","); commaIndex != -1 {
+					paramName := strings.TrimSpace(paramPart[:commaIndex])
+					if paramName != "" {
+						parameters = append(parameters, paramName)
+					}
+				} else {
+					// No comma, take the whole part
+					if paramPart != "" {
+						parameters = append(parameters, paramPart)
 					}
 				}
 			}
