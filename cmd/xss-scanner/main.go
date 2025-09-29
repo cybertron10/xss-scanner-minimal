@@ -91,7 +91,7 @@ func main() {
         if *crawlOnly || *crawl {
             runFileCrawlOnly(*scanFile, *outputFile)
         } else if *scanOnly {
-            runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile)
+            runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile, *useParamsMap, *wordlist)
         } else {
             log.Fatal("With -scan-file, specify either -crawl (domains -> crawl to URLs) or -scan (URLs -> scan directly)")
         }
@@ -628,7 +628,7 @@ func startDomainCrawlingWithConcurrency(domain, scanID string, concurrency int) 
 	log.Printf("Crawling completed. Found %d URLs. Starting XSS scanning with concurrency %d...", len(discoveredURLs), concurrency)
 
 	// Start concurrent XSS scanning with specified concurrency
-	startConcurrentScanningWithConcurrency(discoveredURLs, scanID, concurrency)
+		startConcurrentScanningWithConcurrency(discoveredURLs, scanID, concurrency, false, "")
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
@@ -746,7 +746,7 @@ func startAuthenticatedScanning(scanID string, concurrency int) {
 	crawlMutex.Unlock()
 	
 	// Start concurrent XSS scanning with specified concurrency
-	startConcurrentScanningWithConcurrency(testURLs, scanID, concurrency)
+		startConcurrentScanningWithConcurrency(testURLs, scanID, concurrency, false, "")
 	
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for authenticated scan to complete...")
@@ -900,7 +900,7 @@ func startConcurrentScanning(urls []string, scanID string) {
 	}
 }
 
-func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int) {
+func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int, useParamsMap bool, wordlist string) {
 	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(urls), concurrency)
 	
 	if concurrency == 1 {
@@ -945,11 +945,13 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 				URL:      url,
 				Headers:  map[string]string{},
 				Config:   &scanner.Config{
-					Quiet:     false, // Enable verbose logging for domain scans
-					Headless:  true,  // Enable headless browser
-					FastMode:  false, // Disable fast mode for thorough scanning
-					UltraFast: false, // Disable ultra-fast mode
-					Timeout:   2 * time.Minute, // Set reasonable timeout
+					Quiet:        false, // Enable verbose logging for domain scans
+					Headless:     true,  // Enable headless browser
+					FastMode:     false, // Disable fast mode for thorough scanning
+					UltraFast:    false, // Disable ultra-fast mode
+					Timeout:      2 * time.Minute, // Set reasonable timeout
+					UseParamsMap: useParamsMap,
+					WordlistFile: wordlist,
 				},
 				ScanType: "domain",
 				ScanID:   scanID,
@@ -1130,7 +1132,7 @@ func runFileCrawlOnly(filename string, outputFile string) {
 }
 
 // runScanFromFile scans URLs or domains from a file
-func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string) {
+func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string, useParamsMap bool, wordlist string) {
     log.Printf("Starting direct URL scan from file: %s (concurrency: %d)", filename, concurrency)
 
     // Clean up old scan results files before starting new scan
@@ -1158,7 +1160,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
     go processScanQueue(quiet)
 
     // Enqueue URLs directly for scanning (skip crawling)
-    startConcurrentScanningWithConcurrency(urls, scanID, concurrency)
+    startConcurrentScanningWithConcurrency(urls, scanID, concurrency, useParamsMap, wordlist)
 
     // Wait for all URLs to be scanned (treat completed OR error as terminal)
     log.Printf("Waiting for URL scanning to complete...")
