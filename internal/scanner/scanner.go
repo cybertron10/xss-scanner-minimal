@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -541,14 +540,12 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 	defer os.Remove(tmpFile.Name())
 	tmpFile.Close()
 	
-	// Build Arjun command
+	// Build Arjun command - use simpler flags that are more likely to work
 	cmd := exec.Command("arjun", 
 		"-u", parsedURL.String(),
 		"-o", tmpFile.Name(),
-		"-oT", "json",
 		"-q", // Quiet mode
 		"-t", "10", // 10 threads
-		"-w", "1000", // 1000 wordlist entries
 	)
 	
 	// Add headers if available
@@ -567,6 +564,15 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 	if err != nil {
 		if !s.config.Quiet {
 			log.Printf("Arjun execution failed: %v, output: %s", err, string(output))
+			log.Printf("Arjun command: %s", cmd.String())
+		}
+		return parameters
+	}
+	
+	// Check if output file exists and has content
+	if _, err := os.Stat(tmpFile.Name()); os.IsNotExist(err) {
+		if !s.config.Quiet {
+			log.Printf("Arjun output file not created: %s", tmpFile.Name())
 		}
 		return parameters
 	}
@@ -576,6 +582,10 @@ func (s *Scanner) discoverParametersWithArjun(parsedURL *url.URL) []Parameter {
 	if err != nil {
 		if !s.config.Quiet {
 			log.Printf("Error parsing Arjun output: %v", err)
+			// Try to read the file content for debugging
+			if content, readErr := os.ReadFile(tmpFile.Name()); readErr == nil {
+				log.Printf("Arjun output file content: %s", string(content))
+			}
 		}
 		return parameters
 	}
@@ -603,27 +613,37 @@ func (s *Scanner) isArjunAvailable() bool {
 	return err == nil
 }
 
-// parseArjunOutput parses Arjun JSON output file
+// parseArjunOutput parses Arjun output file (text format)
 func (s *Scanner) parseArjunOutput(filename string) ([]string, error) {
 	var parameters []string
 	
-	// Read the JSON file
+	// Read the output file
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		return parameters, err
 	}
 	
-	// Parse JSON
-	var result map[string]interface{}
-	if err := json.Unmarshal(data, &result); err != nil {
-		return parameters, err
-	}
+	content := string(data)
 	
-	// Extract parameters from Arjun output
-	if params, ok := result["params"].([]interface{}); ok {
-		for _, param := range params {
-			if paramStr, ok := param.(string); ok {
-				parameters = append(parameters, paramStr)
+	// Arjun outputs parameters in text format, look for lines like:
+	// [+] Parameters found: param1, param2, param3
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "Parameters found:") {
+			// Extract parameters from the line
+			parts := strings.Split(line, "Parameters found:")
+			if len(parts) > 1 {
+				paramStr := strings.TrimSpace(parts[1])
+				if paramStr != "" {
+					// Split by comma and clean up
+					paramList := strings.Split(paramStr, ",")
+					for _, param := range paramList {
+						cleanParam := strings.TrimSpace(param)
+						if cleanParam != "" {
+							parameters = append(parameters, cleanParam)
+						}
+					}
+				}
 			}
 		}
 	}
