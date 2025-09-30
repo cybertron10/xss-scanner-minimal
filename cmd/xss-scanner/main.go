@@ -913,24 +913,13 @@ func startConcurrentScanning(urls []string, scanID string) {
 }
 
 func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int, useParamsMap bool, wordlist string, deepScan bool) {
-	// Filter and deduplicate URLs - only keep URLs with parameters
-	scannerInstance := &scanner.Scanner{} // Create temporary scanner instance for utility functions
-	filteredURLsMap := scannerInstance.FilterAndDeduplicateURLs(urls)
-	
-	// Convert map back to slice for processing
-	var filteredURLs []string
-	for _, url := range filteredURLsMap {
-		filteredURLs = append(filteredURLs, url)
-	}
-	
-	log.Printf("URL filtering completed: %d original URLs -> %d URLs with parameters (after deduplication)", len(urls), len(filteredURLs))
-	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(filteredURLs), concurrency)
+	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(urls), concurrency)
 	
 	if concurrency == 1 {
 		// Sequential scanning - one URL at a time
 		log.Printf("Using sequential scanning (concurrency=1)")
-		for i, url := range filteredURLs {
-			log.Printf("Scanning URL %d/%d: %s", i+1, len(filteredURLs), url)
+		for i, url := range urls {
+			log.Printf("Scanning URL %d/%d: %s", i+1, len(urls), url)
 			
 			// Submit each URL for sequential scanning
 			scanReq := scanRequest{
@@ -960,8 +949,8 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 		log.Printf("Using concurrent scanning with %d workers", concurrency)
 		
 		// Queue all URLs synchronously to avoid race conditions
-		for i, url := range filteredURLs {
-			log.Printf("Queuing URL %d/%d: %s", i+1, len(filteredURLs), url)
+		for i, url := range urls {
+			log.Printf("Queuing URL %d/%d: %s", i+1, len(urls), url)
 			
 			// Submit each URL for concurrent scanning
 			scanReq := scanRequest{
@@ -1183,8 +1172,20 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
     scanSemaphore = make(chan struct{}, concurrency)
     go processScanQueue(quiet)
 
-    // Enqueue URLs directly for scanning (skip crawling)
-    startConcurrentScanningWithConcurrency(urls, scanID, concurrency, useParamsMap, wordlist, deepScan)
+    // Filter and deduplicate URLs - only keep URLs with parameters
+    scannerInstance := &scanner.Scanner{} // Create temporary scanner instance for utility functions
+    filteredURLsMap := scannerInstance.FilterAndDeduplicateURLs(urls)
+    
+    // Convert map back to slice for processing
+    var filteredURLs []string
+    for _, url := range filteredURLsMap {
+        filteredURLs = append(filteredURLs, url)
+    }
+    
+    log.Printf("URL filtering completed: %d original URLs -> %d URLs with parameters (after deduplication)", len(urls), len(filteredURLs))
+
+    // Enqueue filtered URLs directly for scanning (skip crawling)
+    startConcurrentScanningWithConcurrency(filteredURLs, scanID, concurrency, useParamsMap, wordlist, deepScan)
 
     // Wait for all URLs to be scanned (treat completed OR error as terminal)
     log.Printf("Waiting for URL scanning to complete...")
@@ -1199,7 +1200,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
             scanMutex.Lock()
             done := 0
             completed := 0
-            for _, u := range urls {
+            for _, u := range filteredURLs {
                 if urlStatus, exists := scanStatus[u]; exists {
                     if urlStatus == "completed" || urlStatus == "error" {
                         done++
@@ -1210,7 +1211,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
                 }
             }
             scanMutex.Unlock()
-            log.Printf("File URL scan timed out: %d completed, %d failed, %d pending", completed, done-completed, len(urls)-done)
+            log.Printf("File URL scan timed out: %d completed, %d failed, %d pending", completed, done-completed, len(filteredURLs)-done)
             if outputFile != "" {
                 saveFileScanResults(scanID, outputFile)
             }
@@ -1220,7 +1221,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
             scanMutex.Lock()
             done := 0
             completed := 0
-            for _, u := range urls {
+            for _, u := range filteredURLs {
                 if urlStatus, exists := scanStatus[u]; exists {
                     if urlStatus == "completed" || urlStatus == "error" {
                         done++
@@ -1230,18 +1231,18 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
                     }
                 }
             }
-            allDone := done == len(urls)
+            allDone := done == len(filteredURLs)
             scanMutex.Unlock()
 
             if allDone {
-                log.Printf("File URL scan finished: %d completed, %d failed", completed, len(urls)-completed)
+                log.Printf("File URL scan finished: %d completed, %d failed", completed, len(filteredURLs)-completed)
                 if outputFile != "" {
                     saveFileScanResults(scanID, outputFile)
                 }
                 return
             }
 
-            log.Printf("Scanning in progress... (%d/%d done)", done, len(urls))
+            log.Printf("Scanning in progress... (%d/%d done)", done, len(filteredURLs))
         }
     }
 }
