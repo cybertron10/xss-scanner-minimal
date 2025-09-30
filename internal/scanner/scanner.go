@@ -505,7 +505,7 @@ func (s *Scanner) discoverParametersWithParamsMap(parsedURL *url.URL) []Paramete
 		"-wordlist", s.config.WordlistFile,
 		"-report", tmpFile.Name(),
 		"-chunk-size", "50", // Smaller chunks for faster processing
-		"-max-params", "200", // Limit maximum parameters discovered
+		"-timeout", "5", // Shorter timeout for faster discovery
 	)
 
 	// Add headers if available
