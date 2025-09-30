@@ -1172,17 +1172,25 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
     scanSemaphore = make(chan struct{}, concurrency)
     go processScanQueue(quiet)
 
-    // Filter and deduplicate URLs - only keep URLs with parameters
+    // Filter and deduplicate URLs
     scannerInstance := &scanner.Scanner{} // Create temporary scanner instance for utility functions
-    filteredURLsMap := scannerInstance.FilterAndDeduplicateURLs(urls)
-    
-    // Convert map back to slice for processing
     var filteredURLs []string
-    for _, url := range filteredURLsMap {
-        filteredURLs = append(filteredURLs, url)
-    }
     
-    log.Printf("URL filtering completed: %d original URLs -> %d URLs with parameters (after deduplication)", len(urls), len(filteredURLs))
+    if useParamsMap {
+        // When using ParamsMap, keep all URLs (including those without parameters) for parameter discovery
+        filteredURLsMap := scannerInstance.FilterAndDeduplicateURLsWithParamsMap(urls)
+        for _, url := range filteredURLsMap {
+            filteredURLs = append(filteredURLs, url)
+        }
+        log.Printf("URL filtering completed: %d original URLs -> %d URLs (after deduplication, ParamsMap will discover parameters)", len(urls), len(filteredURLs))
+    } else {
+        // Without ParamsMap, only keep URLs with parameters
+        filteredURLsMap := scannerInstance.FilterAndDeduplicateURLs(urls)
+        for _, url := range filteredURLsMap {
+            filteredURLs = append(filteredURLs, url)
+        }
+        log.Printf("URL filtering completed: %d original URLs -> %d URLs with parameters (after deduplication)", len(urls), len(filteredURLs))
+    }
 
     // Enqueue filtered URLs directly for scanning (skip crawling)
     startConcurrentScanningWithConcurrency(filteredURLs, scanID, concurrency, useParamsMap, wordlist, deepScan)

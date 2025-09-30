@@ -3126,6 +3126,35 @@ func (s *Scanner) FilterAndDeduplicateURLs(urls []string) map[string]string {
 	return filteredURLs
 }
 
+// FilterAndDeduplicateURLsWithParamsMap filters URLs and deduplicates them, keeping all URLs for ParamsMap discovery
+// Returns a map where key is normalized URL and value is the original URL
+func (s *Scanner) FilterAndDeduplicateURLsWithParamsMap(urls []string) map[string]string {
+	filteredURLs := make(map[string]string)
+	
+	for _, rawURL := range urls {
+		parsedURL, err := url.Parse(rawURL)
+		if err != nil {
+			continue // Skip invalid URLs
+		}
+		
+		// For ParamsMap, keep all URLs (including those without parameters)
+		// Normalize the URL (remove parameter values if they exist)
+		var normalizedURL string
+		if len(parsedURL.Query()) > 0 {
+			normalizedURL = s.NormalizeURLWithParameters(rawURL)
+		} else {
+			// For URLs without parameters, use the base URL
+			normalizedURL = fmt.Sprintf("%s://%s%s", parsedURL.Scheme, parsedURL.Host, parsedURL.Path)
+		}
+		
+		if _, exists := filteredURLs[normalizedURL]; !exists {
+			filteredURLs[normalizedURL] = rawURL
+		}
+	}
+	
+	return filteredURLs
+}
+
 // ExtractURLsWithParameters extracts URLs that have parameters from a list of URLs
 func (s *Scanner) ExtractURLsWithParameters(urls []string) []string {
 	var urlsWithParams []string
