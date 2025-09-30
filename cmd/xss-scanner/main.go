@@ -50,13 +50,18 @@ func main() {
 		server      = flag.Bool("server", false, "Run as HTTP server for Burp Suite extension")
 		port        = flag.String("port", "8081", "Server port (default: 8081)")
 		useParamsMap = flag.Bool("paramsmap", false, "Use ParamsMap for enhanced parameter discovery")
-		wordlist    = flag.String("wordlist", "param-wordlist.txt", "Wordlist file for parameter discovery")
+		wordlist    = flag.String("wordlist", "", "Wordlist file for parameter discovery (required when using -paramsmap)")
 	)
 	flag.Parse()
 
 	// Validate concurrency flag
 	if *concurrency < 1 || *concurrency > 20 {
 		log.Fatal("Concurrency must be between 1 and 20")
+	}
+
+	// Validate ParamsMap usage - wordlist is required when using -paramsmap
+	if *useParamsMap && *wordlist == "" {
+		log.Fatal("When using -paramsmap, -wordlist flag is required with wordlist file path")
 	}
 
 	// Silence all log output when quiet is enabled
@@ -1526,7 +1531,7 @@ func runServer(port string, quiet, headless, fastMode, ultraFast bool, timeout t
 			UltraFast:        ultraFast,
 			Timeout:          timeout,
 			UseParamsMap:     false, // Server mode doesn't support ParamsMap yet
-			WordlistFile:     "param-wordlist.txt",
+			WordlistFile:     "", // Server mode doesn't support ParamsMap yet
 		}
 		
 
