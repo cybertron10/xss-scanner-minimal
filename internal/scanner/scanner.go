@@ -429,8 +429,15 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 
 	// Use ParamsMap for enhanced parameter discovery if enabled
 	if s.config.UseParamsMap {
-		paramsMapParams := s.discoverParametersWithParamsMap(parsedURL)
-		parameters = append(parameters, paramsMapParams...)
+		if s.config.DeepScan {
+			// Deep scan: test parameters on all path endpoints
+			paramsMapParams := s.discoverParametersWithParamsMapDeep(parsedURL)
+			parameters = append(parameters, paramsMapParams...)
+		} else {
+			// Standard scan: test parameters only on the final endpoint
+			paramsMapParams := s.discoverParametersWithParamsMap(parsedURL)
+			parameters = append(parameters, paramsMapParams...)
+		}
 	}
 
 	// Discover form parameters from HTML content
@@ -452,14 +459,121 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 
 	if !s.config.Quiet {
 		paramsMapCount := 0
+		paramsMapDeepCount := 0
 		if s.config.UseParamsMap {
-			paramsMapCount = len(parameters) - len(queryParams) - len(formParams)
+			// Count different types of ParamsMap parameters
+			for _, param := range parameters {
+				if param.Type == "paramsmap" {
+					paramsMapCount++
+				} else if param.Type == "paramsmap_deep" {
+					paramsMapDeepCount++
+				}
+			}
 		}
-		log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d)", 
-			len(parameters), len(queryParams), len(formParams), paramsMapCount)
+		
+		if s.config.DeepScan {
+			log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d, paramsmap_deep: %d)", 
+				len(parameters), len(queryParams), len(formParams), paramsMapCount, paramsMapDeepCount)
+		} else {
+			log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d)", 
+				len(parameters), len(queryParams), len(formParams), paramsMapCount)
+		}
 	}
 
 	return parameters
+}
+
+// extractEndpointsFromURL extracts all possible endpoints from a URL path
+// Example: https://example.com/home/dashboard/url/?search=test
+// Returns: [https://example.com/home/, https://example.com/home/dashboard/, https://example.com/home/dashboard/url/]
+func (s *Scanner) extractEndpointsFromURL(parsedURL *url.URL) []string {
+	var endpoints []string
+	
+	// Get the base URL without query parameters
+	baseURL := fmt.Sprintf("%s://%s", parsedURL.Scheme, parsedURL.Host)
+	
+	// Split the path into segments
+	path := parsedURL.Path
+	if path == "" || path == "/" {
+		// Root path - just return the base URL
+		return []string{baseURL + "/"}
+	}
+	
+	// Remove leading slash and split by slashes
+	path = strings.TrimPrefix(path, "/")
+	segments := strings.Split(path, "/")
+	
+	// Build progressive endpoints
+	currentPath := ""
+	for i, segment := range segments {
+		if segment == "" {
+			continue
+		}
+		currentPath += "/" + segment
+		endpoint := baseURL + currentPath + "/"
+		endpoints = append(endpoints, endpoint)
+		
+		// Don't include the last segment if it looks like a file (has extension)
+		if i == len(segments)-1 && strings.Contains(segment, ".") {
+			// This looks like a file, so we already added it above
+			break
+		}
+	}
+	
+	return endpoints
+}
+
+// discoverParametersWithParamsMapDeep uses ParamsMap for enhanced parameter discovery on all path endpoints
+func (s *Scanner) discoverParametersWithParamsMapDeep(parsedURL *url.URL) []Parameter {
+	var allParameters []Parameter
+	
+	if !s.config.Quiet {
+		log.Printf("Running ParamsMap deep scan for: %s", parsedURL.String())
+	}
+	
+	// Extract all endpoints from the URL path
+	endpoints := s.extractEndpointsFromURL(parsedURL)
+	
+	if !s.config.Quiet {
+		log.Printf("Deep scan found %d endpoints to test: %v", len(endpoints), endpoints)
+	}
+	
+	// Test parameters on each endpoint
+	for i, endpoint := range endpoints {
+		if !s.config.Quiet {
+			log.Printf("Testing endpoint %d/%d: %s", i+1, len(endpoints), endpoint)
+		}
+		
+		// Parse the endpoint URL
+		endpointURL, err := url.Parse(endpoint)
+		if err != nil {
+			if !s.config.Quiet {
+				log.Printf("Error parsing endpoint URL %s: %v", endpoint, err)
+			}
+			continue
+		}
+		
+		// Run ParamsMap on this endpoint
+		endpointParams := s.discoverParametersWithParamsMap(endpointURL)
+		
+		// Mark these parameters as discovered from deep scan
+		for j := range endpointParams {
+			endpointParams[j].Type = "paramsmap_deep"
+		}
+		
+		allParameters = append(allParameters, endpointParams...)
+		
+		if !s.config.Quiet && len(endpointParams) > 0 {
+			log.Printf("Endpoint %s: discovered %d parameters", endpoint, len(endpointParams))
+		}
+	}
+	
+	if !s.config.Quiet {
+		log.Printf("Deep scan completed: discovered %d total parameters across %d endpoints", 
+			len(allParameters), len(endpoints))
+	}
+	
+	return allParameters
 }
 
 // discoverFormParameters finds form parameters from HTML content

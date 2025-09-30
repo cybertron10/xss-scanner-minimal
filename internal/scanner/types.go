@@ -19,6 +19,7 @@ type Config struct {
 	// ParamsMap parameter discovery
 	UseParamsMap     bool
 	WordlistFile     string
+	DeepScan         bool
 }
 
 // ScanResult represents the result of an XSS scan

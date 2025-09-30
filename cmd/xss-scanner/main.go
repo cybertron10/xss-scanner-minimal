@@ -51,6 +51,7 @@ func main() {
 		port        = flag.String("port", "8081", "Server port (default: 8081)")
 		useParamsMap = flag.Bool("paramsmap", false, "Use ParamsMap for enhanced parameter discovery")
 		wordlist    = flag.String("wordlist", "", "Wordlist file for parameter discovery (required when using -paramsmap)")
+		deepScan    = flag.Bool("deep-scan", false, "Enable deep scan mode - test parameters on all path endpoints (requires -paramsmap)")
 	)
 	flag.Parse()
 
@@ -62,6 +63,11 @@ func main() {
 	// Validate ParamsMap usage - wordlist is required when using -paramsmap
 	if *useParamsMap && *wordlist == "" {
 		log.Fatal("When using -paramsmap, -wordlist flag is required with wordlist file path")
+	}
+
+	// Validate deep scan usage - requires ParamsMap
+	if *deepScan && !*useParamsMap {
+		log.Fatal("When using -deep-scan, -paramsmap flag is required")
 	}
 
 	// Silence all log output when quiet is enabled
@@ -96,7 +102,7 @@ func main() {
         if *crawlOnly || *crawl {
             runFileCrawlOnly(*scanFile, *outputFile)
         } else if *scanOnly {
-            runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile, *useParamsMap, *wordlist)
+            runScanFromFile(*scanFile, *concurrency, *quiet, *headless, *fastMode, *ultraFast, *timeout, *outputFile, *useParamsMap, *wordlist, *deepScan)
         } else {
             log.Fatal("With -scan-file, specify either -crawl (domains -> crawl to URLs) or -scan (URLs -> scan directly)")
         }
@@ -147,6 +153,7 @@ func main() {
 		WAFName:          wafName,
 		UseParamsMap:     *useParamsMap,
 		WordlistFile:     *wordlist,
+		DeepScan:         *deepScan,
 	}
 
 	// Create scanner instance
@@ -633,7 +640,7 @@ func startDomainCrawlingWithConcurrency(domain, scanID string, concurrency int) 
 	log.Printf("Crawling completed. Found %d URLs. Starting XSS scanning with concurrency %d...", len(discoveredURLs), concurrency)
 
 	// Start concurrent XSS scanning with specified concurrency
-		startConcurrentScanningWithConcurrency(discoveredURLs, scanID, concurrency, false, "")
+		startConcurrentScanningWithConcurrency(discoveredURLs, scanID, concurrency, false, "", false)
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
@@ -751,7 +758,7 @@ func startAuthenticatedScanning(scanID string, concurrency int) {
 	crawlMutex.Unlock()
 	
 	// Start concurrent XSS scanning with specified concurrency
-		startConcurrentScanningWithConcurrency(testURLs, scanID, concurrency, false, "")
+		startConcurrentScanningWithConcurrency(testURLs, scanID, concurrency, false, "", false)
 	
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for authenticated scan to complete...")
@@ -905,7 +912,7 @@ func startConcurrentScanning(urls []string, scanID string) {
 	}
 }
 
-func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int, useParamsMap bool, wordlist string) {
+func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int, useParamsMap bool, wordlist string, deepScan bool) {
 	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(urls), concurrency)
 	
 	if concurrency == 1 {
@@ -957,6 +964,7 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 					Timeout:      2 * time.Minute, // Set reasonable timeout
 					UseParamsMap: useParamsMap,
 					WordlistFile: wordlist,
+					DeepScan:     deepScan,
 				},
 				ScanType: "domain",
 				ScanID:   scanID,
@@ -1137,7 +1145,7 @@ func runFileCrawlOnly(filename string, outputFile string) {
 }
 
 // runScanFromFile scans URLs or domains from a file
-func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string, useParamsMap bool, wordlist string) {
+func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode, ultraFast bool, timeout time.Duration, outputFile string, useParamsMap bool, wordlist string, deepScan bool) {
     log.Printf("Starting direct URL scan from file: %s (concurrency: %d)", filename, concurrency)
 
     // Clean up old scan results files before starting new scan
@@ -1165,7 +1173,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
     go processScanQueue(quiet)
 
     // Enqueue URLs directly for scanning (skip crawling)
-    startConcurrentScanningWithConcurrency(urls, scanID, concurrency, useParamsMap, wordlist)
+    startConcurrentScanningWithConcurrency(urls, scanID, concurrency, useParamsMap, wordlist, deepScan)
 
     // Wait for all URLs to be scanned (treat completed OR error as terminal)
     log.Printf("Waiting for URL scanning to complete...")
