@@ -233,7 +233,7 @@ func (b *Browser) TestXSSPayloadWithMethod(ctx context.Context, baseURL, paramNa
 		// For POST requests, first navigate to the page, then submit the form
 		_, err := b.page.Goto(testURL, playwright.PageGotoOptions{
 			WaitUntil: playwright.WaitUntilStateDomcontentloaded,
-			Timeout:    playwright.Float(10000), // Increased to 10 seconds
+			Timeout:    playwright.Float(60000), // Increased to 60 seconds
 		})
 		if err != nil {
 			log.Printf("Navigation error for %s: %v", testURL, err)
@@ -270,7 +270,7 @@ func (b *Browser) TestXSSPayloadWithMethod(ctx context.Context, baseURL, paramNa
 		// Try direct navigation first
 		_, navErr := b.page.Goto(testURL, playwright.PageGotoOptions{
 			WaitUntil: playwright.WaitUntilStateDomcontentloaded,
-			Timeout:    playwright.Float(15000),
+			Timeout:    playwright.Float(60000),
 		})
 		if navErr == nil {
 			// Direct navigation succeeded; quick content check
@@ -283,7 +283,7 @@ func (b *Browser) TestXSSPayloadWithMethod(ctx context.Context, baseURL, paramNa
 			// Fall back: navigate to base page and attempt form fill/submit if input exists
 			_, err := b.page.Goto(basePageURL, playwright.PageGotoOptions{
 				WaitUntil: playwright.WaitUntilStateDomcontentloaded,
-				Timeout:    playwright.Float(15000),
+				Timeout:    playwright.Float(60000),
 			})
 			if err != nil {
 				log.Printf("Navigation error for base page %s: %v", basePageURL, err)
@@ -625,7 +625,7 @@ func (b *Browser) TestDOMCookieEval(ctx context.Context, targetURL string, heade
 	// Navigate
 	_, err := b.page.Goto(targetURL, playwright.PageGotoOptions{
 		WaitUntil: playwright.WaitUntilStateDomcontentloaded,
-		Timeout:    playwright.Float(15000),
+		Timeout:    playwright.Float(60000),
 	})
 	if err != nil {
 		return false, err

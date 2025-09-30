@@ -378,6 +378,14 @@ func (s *Scanner) discoverParametersWithParamsMapDeep(parsedURL *url.URL) []Para
 		
 		allParameters = append(allParameters, endpointParams...)
 		
+		// Limit total parameters to prevent timeout
+		if len(allParameters) >= 500 {
+			if !s.config.Quiet {
+				log.Printf("Parameter limit reached (500), stopping deep scan")
+			}
+			break
+		}
+		
 		if !s.config.Quiet && len(endpointParams) > 0 {
 			log.Printf("Endpoint %s: discovered %d parameters", endpoint, len(endpointParams))
 		}
@@ -496,7 +504,8 @@ func (s *Scanner) discoverParametersWithParamsMap(parsedURL *url.URL) []Paramete
 		"-url", parsedURL.String(),
 		"-wordlist", s.config.WordlistFile,
 		"-report", tmpFile.Name(),
-		"-chunk-size", "100", // Smaller chunks for faster processing
+		"-chunk-size", "50", // Smaller chunks for faster processing
+		"-max-params", "200", // Limit maximum parameters discovered
 	)
 
 	// Add headers if available
@@ -507,7 +516,7 @@ func (s *Scanner) discoverParametersWithParamsMap(parsedURL *url.URL) []Paramete
 	}
 
 	// Run ParamsMap with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
