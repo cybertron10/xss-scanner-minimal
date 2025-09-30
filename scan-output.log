@@ -1,0 +1,559 @@
+Script started on 2025-09-30 09:41:58+00:00 [COMMAND="./xss-scanner -scan-file test.txt -scan -o test-vulnerable-output.txt -paramsmap -wordlist param-wordlist.txt -deep-scan" TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="133" LINES="33"]
+2025/09/30 09:41:58 Starting direct URL scan from file: test.txt (concurrency: 5)
+2025/09/30 09:41:58 Cleaned up old scan results files
+2025/09/30 09:41:58 Found 1 URLs to scan
+2025/09/30 09:41:58 URL filtering completed: 1 original URLs -> 1 URLs with parameters (after deduplication)
+2025/09/30 09:41:58 Starting scanning of 1 URLs with concurrency: 5
+2025/09/30 09:41:58 Using concurrent scanning with 5 workers
+2025/09/30 09:41:58 Queuing URL 1/1: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello
+2025/09/30 09:41:58 Queued URL for concurrent scanning: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello
+2025/09/30 09:41:58 Waiting for URL scanning to complete...
+2025/09/30 09:41:58 Worker 1 (concurrent): Starting scan for http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello (Active scans: 1)
+2025/09/30 09:41:59 Starting XSS scan for: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello
+2025/09/30 09:41:59 Running ParamsMap deep scan for: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello
+2025/09/30 09:41:59 Deep scan found 3 endpoints to test: [http://16.170.226.104/vulnerable/ http://16.170.226.104/vulnerable/reflected/ http://16.170.226.104/vulnerable/reflected/parameters.php/]
+2025/09/30 09:41:59 Testing endpoint 1/3: http://16.170.226.104/vulnerable/
+2025/09/30 09:41:59 Running ParamsMap parameter discovery for: http://16.170.226.104/vulnerable/
+2025/09/30 09:41:59 Running ParamsMap command: /home/ubuntu/go/bin/paramsmap -url http://16.170.226.104/vulnerable/ -wordlist param-wordlist.txt -report /tmp/paramsmap_output_1263745047.json -chunk-size 100
+2025/09/30 09:41:59 Output file: /tmp/paramsmap_output_1263745047.json
+2025/09/30 09:41:59 ParamsMap execution successful
+2025/09/30 09:41:59 ParamsMap discovered 835 additional parameters: [validate value var variant ver version vid view view_all view_type volume vq w where widgetId widgetType width window withdraw word worker workerId wr_id write x xargs xdebug xhr xml y year yr z zip zoom AID AspxAutoDetectCookieSupport C CFID CFTOKEN CHANNEL CODE FID GI_ID ID Id Itemid L N O ObjectPath Open P PAGEN_1 PS PUT Page R2 ReturnUrl ___from_store ___store _action _bc_fsnf _bqG _bqH _method _ref _tags_limit _wpnonce a ac access account act action activity add add-to-cart add_acc add_cat add_comment add_event add_file add_rule add_site add_tag add_to_wishlist add_txt add_type add_user addurl adm admin advanced after age ai1ec aid ajax album alias allow allowed allowopts alpha alt alter amount amp ampday ampmonth ampyear api api_key app arch area arg args article asins at attachment_id auth authcfg authentication authlvl author author_id auto autoplay b back backurl before index info init input inside instance inverse ip ipaddr is_logged isbn islandora_solr_search_navigation ispublic item itemid items_per_page j job json jsonp jump k key keyword keywords kind kw l label labels lang language lat layout leave len length letter level levels license_id lid lightbox like_comment limit link list listStyle list_type lng load load_file load_url loc locale locale-attribute locate location log login login_url logout lon lookfor lr lvl m main_page make manualLanguageChange manufacturer map max maximum maxlen media medio menu method mid min mini minimum minute mod modal mode model modify module month msg n name names navigation neighborhood next next_page nid begindate bid bind block bo_table board board_no bonus bool boolean brand browse byte bytes c cHash cPath cache cad caid caldate call callback case cat cat_id cate_no category categoryId category_id categoryid catid cc cfg cgid char check checkout checkout_url cid city citycode cli client client_id clone cmd code collection collectionIds color column columns combine command comment compare conf config confirm content contenttype context continue controller count country counts coupon create creators csid csrf_token ct currency custom d daemon data date day days db dbg dbn dbname debug delete deleteUser department desc descending description dest destination detail did diff digest dir direction disable disabled display display_group dms do doc doc_id docid document document_srl domain download dq dummy e edit edition ei elementor_library email emailto enable enddate ends entity errmsg error errormsg errorstr etal event exe exec execute expand export ext extension f facet facets fallback family fbclid feature federated_search_id feed fetch fi fid field fields file file_name file_url filename filter filter_0 filter_1 filter_10 filter_11 filter_2 filter_3 filter_4 filter_5 filter_6 filter_7 filter_8 filter_9 filter_by filter_field_1 filter_field_10 filter_field_11 filter_field_12 filter_field_13 filter_field_2 filter_field_3 filter_field_4 filter_field_5 filter_field_6 filter_field_7 filter_field_8 filter_field_9 filter_relational_operator filter_relational_operator_0 filter_relational_operator_1 filter_relational_operator_10 filter_relational_operator_11 filter_relational_operator_2 filter_relational_operator_3 filter_relational_operator_4 filter_relational_operator_5 filter_relational_operator_6 filter_relational_operator_7 filter_relational_operator_8 filter_relational_operator_9 filter_type_1 filter_type_10 no no_cache no_renew nocache nofollow nonce ns null num number o object offset oid oldid op open operator option ord order order_by order_type orderby ordering org organization origin osCsid out output p p_auth p_p_col_count p_p_col_id p_p_id p_p_lifecycle p_p_mode p_p_state pag page pageId pageSize page_id page_url paged pageid pagina param params part password path payload pdf per per_page person pg php_path pid ping places platform plugin port pos position post post_id post_type postcount power pp pref prefix prefn1 prefn2 prefv1 prefv2 prepare prev preview previous_page_section_name price print printable process prod_id product product_count product_id product_no product_order product_orderby product_sort product_type product_view products_id profile showComment showtopic site size sku sleep smode sort sortBy sortDir sort_by sort_index sort_key sort_order sortby sorting source source_id sp special sr src sso st star start starts_with state status step stop strict string style sub subcat subject subjects submit subscribe symbol sys t tab tab_details tab_files table tag tags target task tbn temp template term terms test testing text theme thread tid time timestamp tipo title tld tmp tmpl to todate toggle toggleopen token topLod topic tree type type_id u uid unsubscribe_token update upload uri url used user user_id userid username utm_campaign utm_content utm_medium utm_source utm_term utmi_p uuid v val promo_code provider ps publicationYear q qf qid qty quantity query quote r range range_end range_start rank ranking rate rating reaction read recor redir redirect redirect_to redirect_uri redirect_url redlink ref reference referer referrer refurl reg regex regexp region rename render reply replytocom report req res res_format reset response_type results retpath return returnTo returnUrl return_path return_to return_url returnto returntoquery returnurl rev revision rid role room root route row rows rpp rss rt run rurl s sa sale_date sc scope script sd search search_field search_type searchfilter searchid section sector security sel select selected_facets selected_filters sequence service session set sf_culture share shared shell show filter_type_11 filter_type_12 filter_type_13 filter_type_2 filter_type_3 filter_type_4 filter_type_5 filter_type_6 filter_type_7 filter_type_8 filter_type_9 filter_value_1 filter_value_10 filter_value_11 filter_value_12 filter_value_13 filter_value_2 filter_value_3 filter_value_4 filter_value_5 filter_value_6 filter_value_7 filter_value_8 filter_value_9 filtername filterquery filters filtertype filtertype_0 filtertype_1 filtertype_10 filtertype_11 filtertype_2 filtertype_3 filtertype_4 filtertype_5 filtertype_6 filtertype_7 filtertype_8 filtertype_9 fl flag fn fname focus folder folder_url font force format forum forward fp fq fr fr2 from from_url fromdate func function g gallery geo gid go goto grant group group_id groups h hash height hideanons hidebots hideliu hideminor hidemyself highlight hl host hour html i id id_product ids idx idxno ie image image_url img img_url immagine import in inc include]
+2025/09/30 09:41:59 Endpoint http://16.170.226.104/vulnerable/: discovered 835 parameters
+2025/09/30 09:41:59 Testing endpoint 2/3: http://16.170.226.104/vulnerable/reflected/
+2025/09/30 09:41:59 Running ParamsMap parameter discovery for: http://16.170.226.104/vulnerable/reflected/
+2025/09/30 09:41:59 Running ParamsMap command: /home/ubuntu/go/bin/paramsmap -url http://16.170.226.104/vulnerable/reflected/ -wordlist param-wordlist.txt -report /tmp/paramsmap_output_1365410922.json -chunk-size 100
+2025/09/30 09:41:59 Output file: /tmp/paramsmap_output_1365410922.json
+2025/09/30 09:42:00 ParamsMap execution successful
+2025/09/30 09:42:00 ParamsMap discovered 835 additional parameters: [validate value var variant ver version vid view view_all view_type volume vq w where widgetId widgetType width window withdraw word worker workerId wr_id write x xargs xdebug xhr xml y year yr z zip zoom showComment showtopic site size sku sleep smode sort sortBy sortDir sort_by sort_index sort_key sort_order sortby sorting source source_id sp special sr src sso st star start starts_with state status step stop strict string style sub subcat subject subjects submit subscribe symbol sys t tab tab_details tab_files table tag tags target task tbn temp template term terms test testing text theme thread tid time timestamp tipo title tld tmp tmpl to todate toggle toggleopen token topLod topic tree type type_id u uid unsubscribe_token update upload uri url used user user_id userid username utm_campaign utm_content utm_medium utm_source utm_term utmi_p uuid v val begindate bid bind block bo_table board board_no bonus bool boolean brand browse byte bytes c cHash cPath cache cad caid caldate call callback case cat cat_id cate_no category categoryId category_id categoryid catid cc cfg cgid char check checkout checkout_url cid city citycode cli client client_id clone cmd code collection collectionIds color column columns combine command comment compare conf config confirm content contenttype context continue controller count country counts coupon create creators csid csrf_token ct currency custom d daemon data date day days db dbg dbn dbname debug delete deleteUser department desc descending description dest destination detail did diff digest dir AID AspxAutoDetectCookieSupport C CFID CFTOKEN CHANNEL CODE FID GI_ID ID Id Itemid L N O ObjectPath Open P PAGEN_1 PS PUT Page R2 ReturnUrl ___from_store ___store _action _bc_fsnf _bqG _bqH _method _ref _tags_limit _wpnonce a ac access account act action activity add add-to-cart add_acc add_cat add_comment add_event add_file add_rule add_site add_tag add_to_wishlist add_txt add_type add_user addurl adm admin advanced after age ai1ec aid ajax album alias allow allowed allowopts alpha alt alter amount amp ampday ampmonth ampyear api api_key app arch area arg args article asins at attachment_id auth authcfg authentication authlvl author author_id auto autoplay b back backurl before direction disable disabled display display_group dms do doc doc_id docid document document_srl domain download dq dummy e edit edition ei elementor_library email emailto enable enddate ends entity errmsg error errormsg errorstr etal event exe exec execute expand export ext extension f facet facets fallback family fbclid feature federated_search_id feed fetch fi fid field fields file file_name file_url filename filter filter_0 filter_1 filter_10 filter_11 filter_2 filter_3 filter_4 filter_5 filter_6 filter_7 filter_8 filter_9 filter_by filter_field_1 filter_field_10 filter_field_11 filter_field_12 filter_field_13 filter_field_2 filter_field_3 filter_field_4 filter_field_5 filter_field_6 filter_field_7 filter_field_8 filter_field_9 filter_relational_operator filter_relational_operator_0 filter_relational_operator_1 filter_relational_operator_10 filter_relational_operator_11 filter_relational_operator_2 filter_relational_operator_3 filter_relational_operator_4 filter_relational_operator_5 filter_relational_operator_6 filter_relational_operator_7 filter_relational_operator_8 filter_relational_operator_9 filter_type_1 filter_type_10 filter_type_11 filter_type_12 filter_type_13 filter_type_2 filter_type_3 filter_type_4 filter_type_5 filter_type_6 filter_type_7 filter_type_8 filter_type_9 filter_value_1 filter_value_10 filter_value_11 filter_value_12 filter_value_13 filter_value_2 filter_value_3 filter_value_4 filter_value_5 filter_value_6 filter_value_7 filter_value_8 filter_value_9 filtername filterquery filters filtertype filtertype_0 filtertype_1 filtertype_10 filtertype_11 filtertype_2 filtertype_3 filtertype_4 filtertype_5 filtertype_6 filtertype_7 filtertype_8 filtertype_9 fl flag fn fname focus folder folder_url font force format forum forward fp fq fr fr2 from from_url fromdate func function g gallery geo gid go goto grant group group_id groups h hash height hideanons hidebots hideliu hideminor hidemyself highlight hl host hour html i id id_product ids idx idxno ie image image_url img img_url immagine import in inc include no no_cache no_renew nocache nofollow nonce ns null num number o object offset oid oldid op open operator option ord order order_by order_type orderby ordering org organization origin osCsid out output p p_auth p_p_col_count p_p_col_id p_p_id p_p_lifecycle p_p_mode p_p_state pag page pageId pageSize page_id page_url paged pageid pagina param params part password path payload pdf per per_page person pg php_path pid ping places platform plugin port pos position post post_id post_type postcount power pp pref prefix prefn1 prefn2 prefv1 prefv2 prepare prev preview previous_page_section_name price print printable process prod_id product product_count product_id product_no product_order product_orderby product_sort product_type product_view products_id profile index info init input inside instance inverse ip ipaddr is_logged isbn islandora_solr_search_navigation ispublic item itemid items_per_page j job json jsonp jump k key keyword keywords kind kw l label labels lang language lat layout leave len length letter level levels license_id lid lightbox like_comment limit link list listStyle list_type lng load load_file load_url loc locale locale-attribute locate location log login login_url logout lon lookfor lr lvl m main_page make manualLanguageChange manufacturer map max maximum maxlen media medio menu method mid min mini minimum minute mod modal mode model modify module month msg n name names navigation neighborhood next next_page nid promo_code provider ps publicationYear q qf qid qty quantity query quote r range range_end range_start rank ranking rate rating reaction read recor redir redirect redirect_to redirect_uri redirect_url redlink ref reference referer referrer refurl reg regex regexp region rename render reply replytocom report req res res_format reset response_type results retpath return returnTo returnUrl return_path return_to return_url returnto returntoquery returnurl rev revision rid role room root route row rows rpp rss rt run rurl s sa sale_date sc scope script sd search search_field search_type searchfilter searchid section sector security sel select selected_facets selected_filters sequence service session set sf_culture share shared shell show]
+2025/09/30 09:42:00 Endpoint http://16.170.226.104/vulnerable/reflected/: discovered 835 parameters
+2025/09/30 09:42:00 Testing endpoint 3/3: http://16.170.226.104/vulnerable/reflected/parameters.php/
+2025/09/30 09:42:00 Running ParamsMap parameter discovery for: http://16.170.226.104/vulnerable/reflected/parameters.php/
+2025/09/30 09:42:00 Running ParamsMap command: /home/ubuntu/go/bin/paramsmap -url http://16.170.226.104/vulnerable/reflected/parameters.php/ -wordlist param-wordlist.txt -report /tmp/paramsmap_output_2128686862.json -chunk-size 100
+2025/09/30 09:42:00 Output file: /tmp/paramsmap_output_2128686862.json
+2025/09/30 09:42:00 Scanning in progress... (0/1 done)
+2025/09/30 09:42:01 ParamsMap execution successful
+2025/09/30 09:42:01 ParamsMap discovered 835 additional parameters: [validate value var variant ver version vid view view_all view_type volume vq w where widgetId widgetType width window withdraw word worker workerId wr_id write x xargs xdebug xhr xml y year yr z zip zoom no no_cache no_renew nocache nofollow nonce ns null num number o object offset oid oldid op open operator option ord order order_by order_type orderby ordering org organization origin osCsid out output p p_auth p_p_col_count p_p_col_id p_p_id p_p_lifecycle p_p_mode p_p_state pag page pageId pageSize page_id page_url paged pageid pagina param params part password path payload pdf per per_page person pg php_path pid ping places platform plugin port pos position post post_id post_type postcount power pp pref prefix prefn1 prefn2 prefv1 prefv2 prepare prev preview previous_page_section_name price print printable process prod_id product product_count product_id product_no product_order product_orderby product_sort product_type product_view products_id profile index info init input inside instance inverse ip ipaddr is_logged isbn islandora_solr_search_navigation ispublic item itemid items_per_page j job json jsonp jump k key keyword keywords kind kw l label labels lang language lat layout leave len length letter level levels license_id lid lightbox like_comment limit link list listStyle list_type lng load load_file load_url loc locale locale-attribute locate location log login login_url logout lon lookfor lr lvl m main_page make manualLanguageChange manufacturer map max maximum maxlen media medio menu method mid min mini minimum minute mod modal mode model modify module month msg n name names navigation neighborhood next next_page nid filter_type_11 filter_type_12 filter_type_13 filter_type_2 filter_type_3 filter_type_4 filter_type_5 filter_type_6 filter_type_7 filter_type_8 filter_type_9 filter_value_1 filter_value_10 filter_value_11 filter_value_12 filter_value_13 filter_value_2 filter_value_3 filter_value_4 filter_value_5 filter_value_6 filter_value_7 filter_value_8 filter_value_9 filtername filterquery filters filtertype filtertype_0 filtertype_1 filtertype_10 filtertype_11 filtertype_2 filtertype_3 filtertype_4 filtertype_5 filtertype_6 filtertype_7 filtertype_8 filtertype_9 fl flag fn fname focus folder folder_url font force format forum forward fp fq fr fr2 from from_url fromdate func function g gallery geo gid go goto grant group group_id groups h hash height hideanons hidebots hideliu hideminor hidemyself highlight hl host hour html i id id_product ids idx idxno ie image image_url img img_url immagine import in inc include direction disable disabled display display_group dms do doc doc_id docid document document_srl domain download dq dummy e edit edition ei elementor_library email emailto enable enddate ends entity errmsg error errormsg errorstr etal event exe exec execute expand export ext extension f facet facets fallback family fbclid feature federated_search_id feed fetch fi fid field fields file file_name file_url filename filter filter_0 filter_1 filter_10 filter_11 filter_2 filter_3 filter_4 filter_5 filter_6 filter_7 filter_8 filter_9 filter_by filter_field_1 filter_field_10 filter_field_11 filter_field_12 filter_field_13 filter_field_2 filter_field_3 filter_field_4 filter_field_5 filter_field_6 filter_field_7 filter_field_8 filter_field_9 filter_relational_operator filter_relational_operator_0 filter_relational_operator_1 filter_relational_operator_10 filter_relational_operator_11 filter_relational_operator_2 filter_relational_operator_3 filter_relational_operator_4 filter_relational_operator_5 filter_relational_operator_6 filter_relational_operator_7 filter_relational_operator_8 filter_relational_operator_9 filter_type_1 filter_type_10 AID AspxAutoDetectCookieSupport C CFID CFTOKEN CHANNEL CODE FID GI_ID ID Id Itemid L N O ObjectPath Open P PAGEN_1 PS PUT Page R2 ReturnUrl ___from_store ___store _action _bc_fsnf _bqG _bqH _method _ref _tags_limit _wpnonce a ac access account act action activity add add-to-cart add_acc add_cat add_comment add_event add_file add_rule add_site add_tag add_to_wishlist add_txt add_type add_user addurl adm admin advanced after age ai1ec aid ajax album alias allow allowed allowopts alpha alt alter amount amp ampday ampmonth ampyear api api_key app arch area arg args article asins at attachment_id auth authcfg authentication authlvl author author_id auto autoplay b back backurl before begindate bid bind block bo_table board board_no bonus bool boolean brand browse byte bytes c cHash cPath cache cad caid caldate call callback case cat cat_id cate_no category categoryId category_id categoryid catid cc cfg cgid char check checkout checkout_url cid city citycode cli client client_id clone cmd code collection collectionIds color column columns combine command comment compare conf config confirm content contenttype context continue controller count country counts coupon create creators csid csrf_token ct currency custom d daemon data date day days db dbg dbn dbname debug delete deleteUser department desc descending description dest destination detail did diff digest dir showComment showtopic site size sku sleep smode sort sortBy sortDir sort_by sort_index sort_key sort_order sortby sorting source source_id sp special sr src sso st star start starts_with state status step stop strict string style sub subcat subject subjects submit subscribe symbol sys t tab tab_details tab_files table tag tags target task tbn temp template term terms test testing text theme thread tid time timestamp tipo title tld tmp tmpl to todate toggle toggleopen token topLod topic tree type type_id u uid unsubscribe_token update upload uri url used user user_id userid username utm_campaign utm_content utm_medium utm_source utm_term utmi_p uuid v val promo_code provider ps publicationYear q qf qid qty quantity query quote r range range_end range_start rank ranking rate rating reaction read recor redir redirect redirect_to redirect_uri redirect_url redlink ref reference referer referrer refurl reg regex regexp region rename render reply replytocom report req res res_format reset response_type results retpath return returnTo returnUrl return_path return_to return_url returnto returntoquery returnurl rev revision rid role room root route row rows rpp rss rt run rurl s sa sale_date sc scope script sd search search_field search_type searchfilter searchid section sector security sel select selected_facets selected_filters sequence service session set sf_culture share shared shell show]
+2025/09/30 09:42:01 Endpoint http://16.170.226.104/vulnerable/reflected/parameters.php/: discovered 835 parameters
+2025/09/30 09:42:01 Deep scan completed: discovered 2505 total parameters across 3 endpoints
+2025/09/30 09:42:01 Total parameters discovered: 2508 (query: 3, form: 0, paramsmap: 0, paramsmap_deep: 2505)
+2025/09/30 09:42:01 Discovered 2508 parameters
+2025/09/30 09:42:01 Testing parameter: q
+2025/09/30 09:42:01 Testing parameter reflection: q (type: query) with value: surajishere
+2025/09/30 09:42:01 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=surajishere&search=test
+2025/09/30 09:42:01 Response body length: 3593
+2025/09/30 09:42:01 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:01 Context detection result: html_body
+2025/09/30 09:42:01 Parameter q reflects in response (context: html_body)
+2025/09/30 09:42:01 Generated 2 context-specific payloads
+2025/09/30 09:42:01 Context analysis for parameter q: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:01 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:02 Scanning in progress... (0/1 done)
+2025/09/30 09:42:03 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:03 Event triggering: 0 events triggered
+2025/09/30 09:42:04 Scanning in progress... (0/1 done)
+2025/09/30 09:42:06 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:06 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter q
+2025/09/30 09:42:06 Testing parameter: name
+2025/09/30 09:42:06 Testing parameter reflection: name (type: query) with value: surajishere
+2025/09/30 09:42:06 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=surajishere&q=hello&search=test
+2025/09/30 09:42:06 Response body length: 3593
+2025/09/30 09:42:06 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:06 Context detection result: html_body
+2025/09/30 09:42:06 Parameter name reflects in response (context: html_body)
+2025/09/30 09:42:06 Generated 2 context-specific payloads
+2025/09/30 09:42:06 Context analysis for parameter name: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:06 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:06 Scanning in progress... (0/1 done)
+2025/09/30 09:42:08 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:08 Event triggering: 0 events triggered
+2025/09/30 09:42:08 Scanning in progress... (0/1 done)
+2025/09/30 09:42:10 Scanning in progress... (0/1 done)
+2025/09/30 09:42:11 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:11 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter name
+2025/09/30 09:42:11 Testing parameter: search
+2025/09/30 09:42:11 Testing parameter reflection: search (type: query) with value: surajishere
+2025/09/30 09:42:11 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=surajishere
+2025/09/30 09:42:11 Response body length: 3595
+2025/09/30 09:42:11 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:11 Context detection result: html_body
+2025/09/30 09:42:11 Parameter search reflects in response (context: html_body)
+2025/09/30 09:42:11 Generated 2 context-specific payloads
+2025/09/30 09:42:11 Context analysis for parameter search: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:11 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:12 Scanning in progress... (0/1 done)
+2025/09/30 09:42:13 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:13 Event triggering: 0 events triggered
+2025/09/30 09:42:14 Scanning in progress... (0/1 done)
+2025/09/30 09:42:16 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:16 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter search
+2025/09/30 09:42:16 Testing parameter: validate
+2025/09/30 09:42:16 Testing parameter reflection: validate (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:16 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&validate=surajishere
+2025/09/30 09:42:16 Response body length: 3611
+2025/09/30 09:42:16 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:16 Context detection result: html_body
+2025/09/30 09:42:16 Parameter validate reflects in response (context: html_body)
+2025/09/30 09:42:16 Generated 2 context-specific payloads
+2025/09/30 09:42:16 Context analysis for parameter validate: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:16 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:16 Scanning in progress... (0/1 done)
+2025/09/30 09:42:18 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:18 Event triggering: 0 events triggered
+2025/09/30 09:42:18 Scanning in progress... (0/1 done)
+2025/09/30 09:42:20 Scanning in progress... (0/1 done)
+2025/09/30 09:42:21 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:21 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter validate
+2025/09/30 09:42:21 Testing parameter: value
+2025/09/30 09:42:21 Testing parameter reflection: value (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:21 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&value=surajishere
+2025/09/30 09:42:21 Response body length: 3608
+2025/09/30 09:42:21 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:21 Context detection result: html_body
+2025/09/30 09:42:21 Parameter value reflects in response (context: html_body)
+2025/09/30 09:42:21 Generated 2 context-specific payloads
+2025/09/30 09:42:21 Context analysis for parameter value: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:21 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:22 Scanning in progress... (0/1 done)
+2025/09/30 09:42:23 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:23 Event triggering: 0 events triggered
+2025/09/30 09:42:24 Scanning in progress... (0/1 done)
+2025/09/30 09:42:26 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:26 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter value
+2025/09/30 09:42:26 Testing parameter: var
+2025/09/30 09:42:26 Testing parameter reflection: var (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:26 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&var=surajishere
+2025/09/30 09:42:26 Response body length: 3606
+2025/09/30 09:42:26 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:26 Context detection result: html_body
+2025/09/30 09:42:26 Parameter var reflects in response (context: html_body)
+2025/09/30 09:42:26 Generated 2 context-specific payloads
+2025/09/30 09:42:26 Context analysis for parameter var: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:26 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:26 Scanning in progress... (0/1 done)
+2025/09/30 09:42:28 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:28 Event triggering: 0 events triggered
+2025/09/30 09:42:28 Scanning in progress... (0/1 done)
+2025/09/30 09:42:30 Scanning in progress... (0/1 done)
+2025/09/30 09:42:31 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:31 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter var
+2025/09/30 09:42:31 Testing parameter: variant
+2025/09/30 09:42:31 Testing parameter reflection: variant (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:31 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&variant=surajishere
+2025/09/30 09:42:31 Response body length: 3610
+2025/09/30 09:42:31 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:31 Context detection result: html_body
+2025/09/30 09:42:31 Parameter variant reflects in response (context: html_body)
+2025/09/30 09:42:31 Generated 2 context-specific payloads
+2025/09/30 09:42:31 Context analysis for parameter variant: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:31 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:32 Scanning in progress... (0/1 done)
+2025/09/30 09:42:33 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:33 Event triggering: 0 events triggered
+2025/09/30 09:42:34 Scanning in progress... (0/1 done)
+2025/09/30 09:42:36 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:36 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter variant
+2025/09/30 09:42:36 Testing parameter: ver
+2025/09/30 09:42:36 Testing parameter reflection: ver (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:36 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&ver=surajishere
+2025/09/30 09:42:36 Response body length: 3606
+2025/09/30 09:42:36 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:36 Context detection result: html_body
+2025/09/30 09:42:36 Parameter ver reflects in response (context: html_body)
+2025/09/30 09:42:36 Generated 2 context-specific payloads
+2025/09/30 09:42:36 Context analysis for parameter ver: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:36 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:36 Scanning in progress... (0/1 done)
+2025/09/30 09:42:38 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:38 Event triggering: 0 events triggered
+2025/09/30 09:42:38 Scanning in progress... (0/1 done)
+2025/09/30 09:42:40 Scanning in progress... (0/1 done)
+2025/09/30 09:42:41 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:41 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter ver
+2025/09/30 09:42:41 Testing parameter: version
+2025/09/30 09:42:41 Testing parameter reflection: version (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:41 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&version=surajishere
+2025/09/30 09:42:41 Response body length: 3610
+2025/09/30 09:42:41 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:41 Context detection result: html_body
+2025/09/30 09:42:41 Parameter version reflects in response (context: html_body)
+2025/09/30 09:42:41 Generated 2 context-specific payloads
+2025/09/30 09:42:41 Context analysis for parameter version: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:41 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:42 Scanning in progress... (0/1 done)
+2025/09/30 09:42:43 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:43 Event triggering: 0 events triggered
+2025/09/30 09:42:44 Scanning in progress... (0/1 done)
+2025/09/30 09:42:46 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:46 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter version
+2025/09/30 09:42:46 Testing parameter: vid
+2025/09/30 09:42:46 Testing parameter reflection: vid (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:46 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&vid=surajishere
+2025/09/30 09:42:46 Response body length: 3606
+2025/09/30 09:42:46 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:46 Context detection result: html_body
+2025/09/30 09:42:46 Parameter vid reflects in response (context: html_body)
+2025/09/30 09:42:46 Generated 2 context-specific payloads
+2025/09/30 09:42:46 Context analysis for parameter vid: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:46 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:46 Scanning in progress... (0/1 done)
+2025/09/30 09:42:48 Scanning in progress... (0/1 done)
+2025/09/30 09:42:48 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:48 Event triggering: 0 events triggered
+2025/09/30 09:42:50 Scanning in progress... (0/1 done)
+2025/09/30 09:42:51 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:51 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter vid
+2025/09/30 09:42:51 Testing parameter: view
+2025/09/30 09:42:51 Testing parameter reflection: view (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:51 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&view=surajishere
+2025/09/30 09:42:51 Response body length: 3607
+2025/09/30 09:42:51 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:51 Context detection result: html_body
+2025/09/30 09:42:51 Parameter view reflects in response (context: html_body)
+2025/09/30 09:42:51 Generated 2 context-specific payloads
+2025/09/30 09:42:51 Context analysis for parameter view: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:51 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:52 Scanning in progress... (0/1 done)
+2025/09/30 09:42:53 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:53 Event triggering: 0 events triggered
+2025/09/30 09:42:54 Scanning in progress... (0/1 done)
+2025/09/30 09:42:56 Scanning in progress... (0/1 done)
+2025/09/30 09:42:56 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:42:56 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter view
+2025/09/30 09:42:56 Testing parameter: view_all
+2025/09/30 09:42:56 Testing parameter reflection: view_all (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:42:56 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&view_all=surajishere
+2025/09/30 09:42:56 Response body length: 3611
+2025/09/30 09:42:56 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:42:56 Context detection result: html_body
+2025/09/30 09:42:56 Parameter view_all reflects in response (context: html_body)
+2025/09/30 09:42:56 Generated 2 context-specific payloads
+2025/09/30 09:42:56 Context analysis for parameter view_all: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:42:56 Selected 2 context-specific payloads for testing
+2025/09/30 09:42:58 Scanning in progress... (0/1 done)
+2025/09/30 09:42:58 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:42:58 Event triggering: 0 events triggered
+2025/09/30 09:43:00 Scanning in progress... (0/1 done)
+2025/09/30 09:43:01 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:01 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter view_all
+2025/09/30 09:43:01 Testing parameter: view_type
+2025/09/30 09:43:01 Testing parameter reflection: view_type (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:01 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&view_type=surajishere
+2025/09/30 09:43:01 Response body length: 3612
+2025/09/30 09:43:01 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:01 Context detection result: html_body
+2025/09/30 09:43:01 Parameter view_type reflects in response (context: html_body)
+2025/09/30 09:43:01 Generated 2 context-specific payloads
+2025/09/30 09:43:01 Context analysis for parameter view_type: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:01 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:02 Scanning in progress... (0/1 done)
+2025/09/30 09:43:03 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:03 Event triggering: 0 events triggered
+2025/09/30 09:43:04 Scanning in progress... (0/1 done)
+2025/09/30 09:43:06 Scanning in progress... (0/1 done)
+2025/09/30 09:43:06 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:06 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter view_type
+2025/09/30 09:43:06 Testing parameter: volume
+2025/09/30 09:43:06 Testing parameter reflection: volume (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:06 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&volume=surajishere
+2025/09/30 09:43:06 Response body length: 3609
+2025/09/30 09:43:06 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:06 Context detection result: html_body
+2025/09/30 09:43:06 Parameter volume reflects in response (context: html_body)
+2025/09/30 09:43:06 Generated 2 context-specific payloads
+2025/09/30 09:43:06 Context analysis for parameter volume: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:06 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:08 Scanning in progress... (0/1 done)
+2025/09/30 09:43:08 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:08 Event triggering: 0 events triggered
+2025/09/30 09:43:10 Scanning in progress... (0/1 done)
+2025/09/30 09:43:11 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:11 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter volume
+2025/09/30 09:43:11 Testing parameter: vq
+2025/09/30 09:43:11 Testing parameter reflection: vq (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:11 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&vq=surajishere
+2025/09/30 09:43:11 Response body length: 3605
+2025/09/30 09:43:11 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:11 Context detection result: html_body
+2025/09/30 09:43:11 Parameter vq reflects in response (context: html_body)
+2025/09/30 09:43:11 Generated 2 context-specific payloads
+2025/09/30 09:43:11 Context analysis for parameter vq: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:11 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:12 Scanning in progress... (0/1 done)
+2025/09/30 09:43:13 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:13 Event triggering: 0 events triggered
+2025/09/30 09:43:14 Scanning in progress... (0/1 done)
+2025/09/30 09:43:16 Scanning in progress... (0/1 done)
+2025/09/30 09:43:16 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:16 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter vq
+2025/09/30 09:43:16 Testing parameter: w
+2025/09/30 09:43:16 Testing parameter reflection: w (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:16 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&w=surajishere
+2025/09/30 09:43:16 Response body length: 3604
+2025/09/30 09:43:16 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:16 Context detection result: html_body
+2025/09/30 09:43:16 Parameter w reflects in response (context: html_body)
+2025/09/30 09:43:16 Generated 2 context-specific payloads
+2025/09/30 09:43:16 Context analysis for parameter w: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:16 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:18 Scanning in progress... (0/1 done)
+2025/09/30 09:43:18 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:18 Event triggering: 0 events triggered
+2025/09/30 09:43:20 Scanning in progress... (0/1 done)
+2025/09/30 09:43:21 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:21 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter w
+2025/09/30 09:43:21 Testing parameter: where
+2025/09/30 09:43:21 Testing parameter reflection: where (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:21 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&where=surajishere
+2025/09/30 09:43:21 Response body length: 3608
+2025/09/30 09:43:21 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:21 Context detection result: html_body
+2025/09/30 09:43:21 Parameter where reflects in response (context: html_body)
+2025/09/30 09:43:21 Generated 2 context-specific payloads
+2025/09/30 09:43:21 Context analysis for parameter where: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:21 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:22 Scanning in progress... (0/1 done)
+2025/09/30 09:43:23 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:23 Event triggering: 0 events triggered
+2025/09/30 09:43:24 Scanning in progress... (0/1 done)
+2025/09/30 09:43:26 Scanning in progress... (0/1 done)
+2025/09/30 09:43:26 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:26 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter where
+2025/09/30 09:43:26 Testing parameter: widgetId
+2025/09/30 09:43:26 Testing parameter reflection: widgetId (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:26 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&widgetId=surajishere
+2025/09/30 09:43:26 Response body length: 3611
+2025/09/30 09:43:26 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:26 Context detection result: html_body
+2025/09/30 09:43:26 Parameter widgetId reflects in response (context: html_body)
+2025/09/30 09:43:26 Generated 2 context-specific payloads
+2025/09/30 09:43:26 Context analysis for parameter widgetId: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:26 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:28 Scanning in progress... (0/1 done)
+2025/09/30 09:43:28 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:28 Event triggering: 0 events triggered
+2025/09/30 09:43:30 Scanning in progress... (0/1 done)
+2025/09/30 09:43:31 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:31 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter widgetId
+2025/09/30 09:43:31 Testing parameter: widgetType
+2025/09/30 09:43:31 Testing parameter reflection: widgetType (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:31 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&widgetType=surajishere
+2025/09/30 09:43:31 Response body length: 3613
+2025/09/30 09:43:31 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:31 Context detection result: html_body
+2025/09/30 09:43:31 Parameter widgetType reflects in response (context: html_body)
+2025/09/30 09:43:31 Generated 2 context-specific payloads
+2025/09/30 09:43:31 Context analysis for parameter widgetType: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:31 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:32 Scanning in progress... (0/1 done)
+2025/09/30 09:43:33 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:33 Event triggering: 0 events triggered
+2025/09/30 09:43:34 Scanning in progress... (0/1 done)
+2025/09/30 09:43:36 Scanning in progress... (0/1 done)
+2025/09/30 09:43:36 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:36 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter widgetType
+2025/09/30 09:43:36 Testing parameter: width
+2025/09/30 09:43:36 Testing parameter reflection: width (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:36 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&width=surajishere
+2025/09/30 09:43:36 Response body length: 3608
+2025/09/30 09:43:36 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:36 Context detection result: html_body
+2025/09/30 09:43:36 Parameter width reflects in response (context: html_body)
+2025/09/30 09:43:36 Generated 2 context-specific payloads
+2025/09/30 09:43:36 Context analysis for parameter width: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:36 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:38 Scanning in progress... (0/1 done)
+2025/09/30 09:43:38 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:38 Event triggering: 0 events triggered
+2025/09/30 09:43:40 Scanning in progress... (0/1 done)
+2025/09/30 09:43:41 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:41 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter width
+2025/09/30 09:43:41 Testing parameter: window
+2025/09/30 09:43:41 Testing parameter reflection: window (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:41 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&window=surajishere
+2025/09/30 09:43:41 Response body length: 3609
+2025/09/30 09:43:41 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:41 Context detection result: html_body
+2025/09/30 09:43:41 Parameter window reflects in response (context: html_body)
+2025/09/30 09:43:41 Generated 2 context-specific payloads
+2025/09/30 09:43:41 Context analysis for parameter window: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:41 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:42 Scanning in progress... (0/1 done)
+2025/09/30 09:43:43 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:43 Event triggering: 0 events triggered
+2025/09/30 09:43:44 Scanning in progress... (0/1 done)
+2025/09/30 09:43:46 Scanning in progress... (0/1 done)
+2025/09/30 09:43:46 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:46 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter window
+2025/09/30 09:43:46 Testing parameter: withdraw
+2025/09/30 09:43:46 Testing parameter reflection: withdraw (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:46 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&withdraw=surajishere
+2025/09/30 09:43:46 Response body length: 3611
+2025/09/30 09:43:46 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:46 Context detection result: html_body
+2025/09/30 09:43:46 Parameter withdraw reflects in response (context: html_body)
+2025/09/30 09:43:46 Generated 2 context-specific payloads
+2025/09/30 09:43:46 Context analysis for parameter withdraw: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:46 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:48 Scanning in progress... (0/1 done)
+2025/09/30 09:43:49 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:49 Event triggering: 0 events triggered
+2025/09/30 09:43:50 Scanning in progress... (0/1 done)
+2025/09/30 09:43:52 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:52 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter withdraw
+2025/09/30 09:43:52 Testing parameter: word
+2025/09/30 09:43:52 Testing parameter reflection: word (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:52 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&word=surajishere
+2025/09/30 09:43:52 Response body length: 3607
+2025/09/30 09:43:52 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:52 Context detection result: html_body
+2025/09/30 09:43:52 Parameter word reflects in response (context: html_body)
+2025/09/30 09:43:52 Generated 2 context-specific payloads
+2025/09/30 09:43:52 Context analysis for parameter word: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:52 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:52 Scanning in progress... (0/1 done)
+2025/09/30 09:43:54 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:54 Event triggering: 0 events triggered
+2025/09/30 09:43:54 Scanning in progress... (0/1 done)
+2025/09/30 09:43:56 Scanning in progress... (0/1 done)
+2025/09/30 09:43:57 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:43:57 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter word
+2025/09/30 09:43:57 Testing parameter: worker
+2025/09/30 09:43:57 Testing parameter reflection: worker (type: paramsmap_deep) with value: surajishere
+2025/09/30 09:43:57 Test URL: http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&q=hello&search=test&worker=surajishere
+2025/09/30 09:43:57 Response body length: 3609
+2025/09/30 09:43:57 Response preview: <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vulnerable XSS Test Page - Parameters Endpoint<...
+2025/09/30 09:43:57 Context detection result: html_body
+2025/09/30 09:43:57 Parameter worker reflects in response (context: html_body)
+2025/09/30 09:43:57 Generated 2 context-specific payloads
+2025/09/30 09:43:57 Context analysis for parameter worker: &{ContextType:html_body TagName: AttributeName: QuoteType: IsAttributeValue:false IsAttributeName:false IsInScript:false IsInEvent:false IsInURL:false IsInCSS:false IsInComment:false IsInTitle:false IsExecutable:true RequiresBreakout:false BreakoutSequence: ExecutableContext: RecommendedPayloads:[<script>alert(1)</script> <img src=x onerror=alert(1)>]}
+2025/09/30 09:43:57 Selected 2 context-specific payloads for testing
+2025/09/30 09:43:58 Scanning in progress... (0/1 done)
+2025/09/30 09:43:59 Detected event handler context with payload: <script>alert(1)</script>
+2025/09/30 09:43:59 Event triggering: 0 events triggered
+2025/09/30 09:44:00 Scanning in progress... (0/1 done)
+2025/09/30 09:44:02 Headless browser result for payload <script>alert(1)</script>: alertDetected=true
+2025/09/30 09:44:02 Payload triggered alert: <script>alert(1)</script> - stopping further payload testing for parameter worker
+2025/09/30 09:44:02 Worker 1: Scan failed for http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello: context deadline exceeded
+2025/09/30 09:44:02 File URL scan finished: 0 completed, 1 failed
+
+Script done on 2025-09-30 09:44:02+00:00 [COMMAND_EXIT_CODE="0"]

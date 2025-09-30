@@ -46,7 +46,7 @@ func main() {
 		headless    = flag.Bool("headless", true, "Use headless browser for testing")
 		fastMode    = flag.Bool("fast-mode", false, "Enable fast mode with limited payloads")
 		ultraFast   = flag.Bool("ultra-fast", false, "Enable ultra-fast mode (skip character analysis entirely)")
-		timeout     = flag.Duration("timeout", 2*time.Minute, "Scan timeout")
+		timeout     = flag.Duration("timeout", 10*time.Minute, "Scan timeout")
 		server      = flag.Bool("server", false, "Run as HTTP server for Burp Suite extension")
 		port        = flag.String("port", "8081", "Server port (default: 8081)")
 		useParamsMap = flag.Bool("paramsmap", false, "Use ParamsMap for enhanced parameter discovery")
@@ -515,7 +515,7 @@ func startDomainCrawling(domain, scanID string) {
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
-	timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+	timeoutChan := time.After(2 * time.Hour) // 2 hour timeout for deep scans
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	
@@ -644,7 +644,7 @@ func startDomainCrawlingWithConcurrency(domain, scanID string, concurrency int) 
 
 	// Wait for all URLs to be scanned before marking as completed
 	log.Printf("Waiting for XSS scanning to complete...")
-	timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+	timeoutChan := time.After(2 * time.Hour) // 2 hour timeout for deep scans
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
 	
@@ -1189,7 +1189,7 @@ func runScanFromFile(filename string, concurrency int, quiet, headless, fastMode
 
     // Wait for all URLs to be scanned (treat completed OR error as terminal)
     log.Printf("Waiting for URL scanning to complete...")
-    timeoutChan := time.After(30 * time.Minute) // 30 minute timeout
+    timeoutChan := time.After(2 * time.Hour) // 2 hour timeout for deep scans
     ticker := time.NewTicker(2 * time.Second)
     defer ticker.Stop()
     

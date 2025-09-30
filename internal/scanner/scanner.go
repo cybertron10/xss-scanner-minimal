@@ -250,8 +250,8 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 			parameters = append(parameters, paramsMapParams...)
 		} else {
 			// Standard scan: test parameters only on the final endpoint
-			paramsMapParams := s.discoverParametersWithParamsMap(parsedURL)
-			parameters = append(parameters, paramsMapParams...)
+		paramsMapParams := s.discoverParametersWithParamsMap(parsedURL)
+		parameters = append(parameters, paramsMapParams...)
 		}
 	}
 
@@ -290,8 +290,8 @@ func (s *Scanner) discoverParameters(parsedURL *url.URL) []Parameter {
 			log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d, paramsmap_deep: %d)", 
 				len(parameters), len(queryParams), len(formParams), paramsMapCount, paramsMapDeepCount)
 		} else {
-			log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d)", 
-				len(parameters), len(queryParams), len(formParams), paramsMapCount)
+		log.Printf("Total parameters discovered: %d (query: %d, form: %d, paramsmap: %d)", 
+			len(parameters), len(queryParams), len(formParams), paramsMapCount)
 		}
 	}
 
