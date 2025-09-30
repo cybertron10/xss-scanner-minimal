@@ -140,7 +140,7 @@ func (b *Browser) TestXSSPayloadWithMethod(ctx context.Context, baseURL, paramNa
 	defer b.mu.Unlock()
 	
 	// Add timeout protection
-	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	
 	// Add panic recovery for the entire function
@@ -605,7 +605,7 @@ func (b *Browser) TestDOMCookieEval(ctx context.Context, targetURL string, heade
 	defer b.mu.Unlock()
 
 	// Timeout scope
-	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 
 	alertDetected := false

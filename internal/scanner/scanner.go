@@ -39,7 +39,7 @@ func NewScanner(config *Config) *Scanner {
 	}
 	
 	client := &http.Client{
-		Timeout:   10 * time.Second,
+		Timeout:   60 * time.Second,
 		Transport: transport,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			// Don't follow redirects to external domains
