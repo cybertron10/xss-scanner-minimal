@@ -913,13 +913,24 @@ func startConcurrentScanning(urls []string, scanID string) {
 }
 
 func startConcurrentScanningWithConcurrency(urls []string, scanID string, concurrency int, useParamsMap bool, wordlist string, deepScan bool) {
-	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(urls), concurrency)
+	// Filter and deduplicate URLs - only keep URLs with parameters
+	scannerInstance := &scanner.Scanner{} // Create temporary scanner instance for utility functions
+	filteredURLsMap := scannerInstance.FilterAndDeduplicateURLs(urls)
+	
+	// Convert map back to slice for processing
+	var filteredURLs []string
+	for _, url := range filteredURLsMap {
+		filteredURLs = append(filteredURLs, url)
+	}
+	
+	log.Printf("URL filtering completed: %d original URLs -> %d URLs with parameters (after deduplication)", len(urls), len(filteredURLs))
+	log.Printf("Starting scanning of %d URLs with concurrency: %d", len(filteredURLs), concurrency)
 	
 	if concurrency == 1 {
 		// Sequential scanning - one URL at a time
 		log.Printf("Using sequential scanning (concurrency=1)")
-		for i, url := range urls {
-			log.Printf("Scanning URL %d/%d: %s", i+1, len(urls), url)
+		for i, url := range filteredURLs {
+			log.Printf("Scanning URL %d/%d: %s", i+1, len(filteredURLs), url)
 			
 			// Submit each URL for sequential scanning
 			scanReq := scanRequest{
@@ -949,8 +960,8 @@ func startConcurrentScanningWithConcurrency(urls []string, scanID string, concur
 		log.Printf("Using concurrent scanning with %d workers", concurrency)
 		
 		// Queue all URLs synchronously to avoid race conditions
-		for i, url := range urls {
-			log.Printf("Queuing URL %d/%d: %s", i+1, len(urls), url)
+		for i, url := range filteredURLs {
+			log.Printf("Queuing URL %d/%d: %s", i+1, len(filteredURLs), url)
 			
 			// Submit each URL for concurrent scanning
 			scanReq := scanRequest{
