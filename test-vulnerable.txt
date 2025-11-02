@@ -1,1 +1,0 @@
-http://16.170.226.104/vulnerable/reflected/parameters.php?name=suraj&search=test&q=hello
