@@ -1,6 +1,6 @@
 # XSS Scanner - Minimal Version
 
-A distributed XSS (Cross-Site Scripting) scanner built with Go and Playwright for headless browser automation.
+A XSS (Cross-Site Scripting) scanner built with Go and Playwright for headless browser automation.
 
 ## Features
 
@@ -133,3 +133,4 @@ xss-scanner-minimal/
 
 
 This project is for educational and authorized security testing purposes only.
+
