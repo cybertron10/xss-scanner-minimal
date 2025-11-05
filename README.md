@@ -100,15 +100,6 @@ echo "subdomain.test.com" >> targets.txt
 ./xss-scanner -url "https://example.com" -o single_scan.json
 ```
 
-## Fleet Deployment
-
-For distributed scanning with Ax/Axiom:
-
-1. Upload this directory to your fleet instances
-2. Run `./install-dependencies.sh` on each instance
-3. Run `./build.sh` on each instance
-4. Execute scans across the fleet
-
 ## Dependencies
 
 - **Go 1.22+**: For building the scanner
@@ -133,4 +124,5 @@ xss-scanner-minimal/
 
 
 This project is for educational and authorized security testing purposes only.
+
 
