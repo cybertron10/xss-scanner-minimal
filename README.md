@@ -6,7 +6,6 @@ A distributed XSS (Cross-Site Scripting) scanner built with Go and Playwright fo
 
 - **Headless Browser Scanning**: Uses Playwright for comprehensive XSS detection
 - **WAF Detection**: Integrates with wafw00f for Web Application Firewall detection
-- **Distributed Scanning**: Designed for use with cloud fleets (Ax/Axiom)
 - **Multiple Scan Modes**: URL scanning, domain crawling, and batch processing
 - **Concurrent Processing**: Configurable concurrency for efficient scanning
 
@@ -131,5 +130,6 @@ xss-scanner-minimal/
 ```
 
 ## License
+
 
 This project is for educational and authorized security testing purposes only.
